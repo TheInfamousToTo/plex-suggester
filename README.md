@@ -42,6 +42,7 @@ version: "3.8"
 services:
   plex-suggester:
     image: theinfamoustoto/plex-suggester:latest
+    container_name: plex-suggester
     ports:
       - "5000:5000"
     environment:
