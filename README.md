@@ -1,22 +1,23 @@
 # Plex Movie Suggester
 
-A simple Flask app that connects to your Plex server and suggests a random unwatched movie from your library.  
-It displays movie posters, cast info, and trailer links, with a sleek Plex-themed UI.
+A simple Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
+It displays posters, cast info, and trailer links, with a sleek Plex-themed UI and a dropdown to select your library.
 
 ## Features
 
-- Suggests a random unwatched movie from your Plex library
-- Shows movie poster and summary
-- Displays top cast with images
-- Links to movie trailer and direct "Watch on Plex"
-- Refresh button to suggest another movie
-- Configurable via environment variables
+- Suggests a random unwatched movie, show, anime, or other video from your Plex library
+- Shows poster and summary (with fallback images if missing)
+- Displays top cast with images (uses Plex or Wikipedia, with fallback)
+- Links to trailer and direct "Watch on Plex"
+- "Suggest Another" button keeps your library selection
+- Dropdown menu to select any video library (Movies, TV, Anime, etc.)
+- Responsive, Plex-inspired UI
 
 ## Environment Variables
 
-- `PLEX_URL`: Your Plex server URL (e.g. `http://192.168.31.81:32400`)
+- `PLEX_URL`: Your Plex server URL (e.g. `http://192.168.1.100:32400`)
 - `PLEX_TOKEN`: Your Plex authentication token
-- `PLEX_LIBRARY`: Name of the Plex library to suggest from (default: "Movies")
+- `PLEX_LIBRARY`: Default Plex library to suggest from (default: "Movies")
 
 ## Usage
 
@@ -94,16 +95,47 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 ## How it Works
 
 - Connects to your Plex server using the provided URL and token.
-- Fetches the specified library (default: "Movies").
-- Picks a random unwatched movie and displays its details.
-- Allows refreshing for a new suggestion.
+- Fetches all video libraries (Movies, TV, Anime, etc.).
+- Picks a random unwatched item from the selected library and displays its details.
+- Allows refreshing for a new suggestion, keeping your library selection.
 
 ## Troubleshooting
 
 - Ensure your Plex server is accessible from where you run the app.
 - Double-check your Plex token and library name.
-- Check logs for errors if the app fails to connect or display movies.
+- Check logs for errors if the app fails to connect or display items.
 
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+
+---
+
+## How to update GitHub and Docker Hub with your new README
+
+### 1. Update on GitHub
+
+1. **Commit and push your changes:**
+    ```bash
+    git add README.md
+    git commit -m "Update README with new UI and features"
+    git push
+    ```
+   This updates the README on your GitHub repository.
+
+### 2. Update on Docker Hub
+
+- **If you use automated builds (linked to GitHub):**
+  - The README on Docker Hub will update automatically after your next build (triggered by a push or manually).
+  - You can trigger a build by pushing a new tag or clicking "Trigger" in Docker Hub's build settings.
+
+- **If you push images manually:**
+  1. Go to your repository on Docker Hub.
+  2. Click the "Edit" button on the repository page.
+  3. Copy the contents of your updated `README.md` and paste it into the "Full Description" field.
+  4. Save the changes.
+
+**Tip:**  
+Automated builds are recommended for keeping Docker Hub in sync with GitHub.
+
+---
