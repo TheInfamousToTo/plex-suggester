@@ -108,34 +108,12 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
-
----
-
-## How to update GitHub and Docker Hub with your new README
-
-### 1. Update on GitHub
-
-1. **Commit and push your changes:**
-    ```bash
-    git add README.md
-    git commit -m "Update README with new UI and features"
-    git push
-    ```
-   This updates the README on your GitHub repository.
-
-### 2. Update on Docker Hub
-
-- **If you use automated builds (linked to GitHub):**
-  - The README on Docker Hub will update automatically after your next build (triggered by a push or manually).
-  - You can trigger a build by pushing a new tag or clicking "Trigger" in Docker Hub's build settings.
-
-- **If you push images manually:**
-  1. Go to your repository on Docker Hub.
-  2. Click the "Edit" button on the repository page.
-  3. Copy the contents of your updated `README.md` and paste it into the "Full Description" field.
-  4. Save the changes.
-
-**Tip:**  
-Automated builds are recommended for keeping Docker Hub in sync with GitHub.
-
----
+## Contributing
+Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
+## Acknowledgements
+This project is inspired by the need for a simple, user-friendly way to discover new content in Plex libraries. Thanks to the Plex API for making this possible.
+## Contact
+For any questions or feedback, please open an issue
+or contact me on GitHub.
+## Credits
+This project was created by [theinfamoustoto]
