@@ -1,13 +1,15 @@
 # Plex Movie Suggester
 
+**Version 1.2**
+
 A simple Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
-It displays posters, cast info, and trailer links, with a sleek Plex-themed UI and a dropdown to select your library.
+It displays posters, cast info (with robust fallback images), and trailer links, with a sleek Plex-themed UI and a dropdown to select your library.
 
 ## Features
 
 - Suggests a random unwatched movie, show, anime, or other video from your Plex library
 - Shows poster and summary (with fallback images if missing)
-- Displays top cast with images (uses Plex or Wikipedia, with fallback)
+- Displays top cast with images (tries Plex, IMDB, Wikipedia, then always a Plex logo fallback)
 - Links to trailer and direct "Watch on Plex"
 - "Suggest Another" button keeps your library selection
 - Dropdown menu to select any video library (Movies, TV, Anime, etc.)
@@ -97,6 +99,7 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 - Connects to your Plex server using the provided URL and token.
 - Fetches all video libraries (Movies, TV, Anime, etc.).
 - Picks a random unwatched item from the selected library and displays its details.
+- Always provides a fallback image for cast and posters.
 - Allows refreshing for a new suggestion, keeping your library selection.
 
 ## Troubleshooting
@@ -108,12 +111,19 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+
 ## Contributing
+
 Contributions are welcome! Please open an issue or submit a pull request for any improvements or bug fixes.
+
 ## Acknowledgements
+
 This project is inspired by the need for a simple, user-friendly way to discover new content in Plex libraries. Thanks to the Plex API for making this possible.
+
 ## Contact
-For any questions or feedback, please open an issue
-or contact me on GitHub.
+
+For any questions or feedback, please open an issue or contact me on GitHub.
+
 ## Credits
+
 This project was created by [theinfamoustoto]

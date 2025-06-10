@@ -1,5 +1,6 @@
 import os
 import random
+import re
 import requests
 from flask import Flask, render_template, request
 from plexapi.server import PlexServer
@@ -13,22 +14,40 @@ PLEX_TOKEN = os.getenv("PLEX_TOKEN")
 LIBRARY_NAME = os.getenv("PLEX_LIBRARY", "Movies")
 
 wiki_wiki = wikipediaapi.Wikipedia(
-    user_agent='PlexMovieSuggester/1.0 (your-email@example.com)',  # Replace with your contact info
+    user_agent='PlexMovieSuggester/1.0 (bees751@hotmail.com)',  # Replace with your contact info
     language='en'
 )
 
 def get_wikipedia_actor_image(actor_name):
     try:
         url = f"https://en.wikipedia.org/w/api.php?action=query&titles={actor_name}&prop=pageimages&format=json&pithumbsize=200"
-        resp = requests.get(url).json()
+        resp = requests.get(url, timeout=2).json()
         pages = resp.get("query", {}).get("pages", {})
         for pageid, pagedata in pages.items():
             thumbnail = pagedata.get("thumbnail", {})
             if thumbnail:
                 return thumbnail.get("source")
-        return None
     except Exception:
-        return None
+        pass
+    return None  # Always return None if anything fails
+
+def get_imdb_actor_image(actor_name):
+    """
+    Try to fetch actor image from IMDB via DuckDuckGo image search as a workaround.
+    Returns image URL or None.
+    """
+    try:
+        # Use DuckDuckGo image search as a simple, free workaround (not official IMDB API)
+        search_url = f"https://duckduckgo.com/?q={actor_name}+imdb&iax=images&ia=images"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        html = requests.get(search_url, headers=headers, timeout=3).text
+        # Find first image URL in the HTML (very basic, not robust)
+        match = re.search(r'"image":"(https://[^"]+?)"', html)
+        if match:
+            return match.group(1).replace("\\/", "/")
+    except Exception:
+        pass
+    return None
 
 def get_plex_libraries():
     if not PLEX_URL or not PLEX_TOKEN:
@@ -72,15 +91,23 @@ def get_random_movie(library_name=None):
         if getattr(item, "thumb", None):
             item.poster_url = f"{PLEX_URL}{item.thumb}?X-Plex-Token={PLEX_TOKEN}"
         else:
-            item.poster_url = "https://via.placeholder.com/250x375?text=No+Image"
+            item.poster_url = "https://avatars.githubusercontent.com/u/72304665?v=4"
 
-        # Top 5 cast with images (plex thumb or Wikipedia fallback)
+        # Top 5 cast with images (Plex thumb, then IMDB, then Wikipedia, else always placeholder)
         cast = []
         for actor in getattr(item, "roles", [])[:5]:
+            # 1. Try Plex thumb
             if getattr(actor, "thumb", None):
                 actor_thumb = f"{PLEX_URL}{actor.thumb}?X-Plex-Token={PLEX_TOKEN}"
             else:
-                actor_thumb = get_wikipedia_actor_image(actor.tag) or "https://via.placeholder.com/80?text=?"
+                # 2. Try IMDB (via DuckDuckGo image search)
+                actor_thumb = get_imdb_actor_image(actor.tag)
+                if not actor_thumb:
+                    # 3. Try Wikipedia
+                    actor_thumb = get_wikipedia_actor_image(actor.tag)
+                # 4. Fallback to placeholder if all else fails
+                if not actor_thumb:
+                    actor_thumb = "https://upload.wikimedia.org/wikipedia/commons/3/32/Plex_Logo_2019.png"
             cast.append({
                 "name": actor.tag,
                 "thumb": actor_thumb
