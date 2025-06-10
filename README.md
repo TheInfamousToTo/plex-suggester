@@ -30,6 +30,30 @@ docker run -d -p 5000:5000 \
   theinfamoustoto/plex-suggester:latest
 ```
 
+### Running with Docker Compose
+
+Create a `docker-compose.yml` file:
+
+```yaml
+version: "3.8"
+services:
+  plex-suggester:
+    image: theinfamoustoto/plex-suggester:latest
+    ports:
+      - "5000:5000"
+    environment:
+      PLEX_URL: "http://your-plex-server:32400"
+      PLEX_TOKEN: "your-plex-token"
+      PLEX_LIBRARY: "Movies"
+    restart: unless-stopped
+```
+
+Then start the service:
+
+```bash
+docker compose up -d
+```
+
 ### Running Locally
 
 1. Clone the repository:
