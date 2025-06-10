@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Plex Movie Suggester</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+      background-color: #1a1a1a;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.8);
+      min-height: 100vh;
+      padding: 2em;
+      text-align: center;
+    }
+
+    h1 {
+      color: #e5a00d;
+      font-size: 2.5em;
+      margin-bottom: 0.5em;
+    }
+
+    .top-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin-bottom: 2em;
+    }
+
+    .btn {
+      background-color: #e5a00d;
+      color: #000;
+      border: none;
+      padding: 0.6em 1.2em;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+
+    .btn:hover {
+      background-color: #ffbe3c;
+    }
+
+    .poster {
+      max-width: 250px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(229, 160, 13, 0.5);
+      margin-bottom: 1em;
+    }
+
+    .movie-title {
+      font-size: 1.8em;
+      margin: 0.5em 0;
+    }
+
+    .summary {
+      max-width: 800px;
+      margin: 1em auto;
+      font-size: 1.1em;
+      line-height: 1.5;
+      color: #ccc;
+    }
+
+    .cast {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1em;
+      margin-top: 2em;
+    }
+
+    .actor {
+      text-align: center;
+      font-size: 0.9em;
+      color: #ddd;
+    }
+
+    .actor img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #e5a00d;
+    }
+
+    .trailer {
+      margin-top: 2em;
+    }
+
+    .trailer a {
+      background-color: #e5a00d;
+      color: #000;
+      padding: 0.6em 1.2em;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .trailer a:hover {
+      background-color: #ffbe3c;
+    }
+  </style>
+</head>
+<body style="background-image: url('{{ movie.poster_url }}');">
+  <div class="overlay">
+    <h1>Plex Movie Suggester</h1>
+
+    <div class="top-buttons">
+      {% if movie.watch_url %}
+      <a href="{{ movie.watch_url }}" target="_blank" class="btn">► Watch on Plex</a>
+      {% endif %}
+
+      <form method="get" action="/" style="margin:0;">
+        <button type="submit" class="btn">🔁 Suggest Another</button>
+      </form>
+    </div>
+
+    {% if error %}
+      <p style="color: red;">{{ error }}</p>
+    {% elif movie %}
+      <img class="poster" src="{{ movie.poster_url }}" alt="Poster">
+      <div class="movie-title">{{ movie.title }} ({{ movie.year }})</div>
+      <div class="summary">{{ movie.summary }}</div>
+
+      {% if movie.cast %}
+      <h3>Top Cast</h3>
+      <div class="cast">
+        {% for actor in movie.cast %}
+          <div class="actor">
+            {% if actor.thumb %}
+              <img src="{{ actor.thumb }}" alt="{{ actor.name }}">
+            {% else %}
+              <img src="https://via.placeholder.com/80?text=?" alt="No Image">
+            {% endif %}
+            <div>{{ actor.name }}</div>
+          </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if movie.trailer_url %}
+      <div class="trailer">
+        <a href="{{ movie.trailer_url }}" target="_blank">📺 Watch Trailer</a>
+      </div>
+      {% endif %}
+
+    {% else %}
+      <p>No movie found.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

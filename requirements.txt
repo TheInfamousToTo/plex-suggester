@@ -1,0 +1,5 @@
+plexapi
+flask
+gunicorn
+requests
+wikipedia-api
