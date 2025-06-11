@@ -1,6 +1,6 @@
 # Plex Movie Suggester
 
-**Version 1.2.1**
+**Version 1.2.2**
 
 A simple Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
 It displays posters, cast info (with robust fallback images), and trailer links, with a sleek Plex-themed UI and a dropdown to select your library.
@@ -9,7 +9,7 @@ It displays posters, cast info (with robust fallback images), and trailer links,
 
 - Suggests a random unwatched movie, show, anime, or other video from your Plex library
 - Shows poster and summary (with fallback images if missing)
-- Displays top cast with images (tries Plex, IMDB, Wikipedia, then always a Plex logo fallback)
+- Displays top cast with images (tries Plex, IMDB, AniList, Wikipedia, then always a Plex logo fallback)
 - Links to trailer and direct "Watch on Plex"
 - "Suggest Another" button keeps your library selection
 - Dropdown menu to select any video library (Movies, TV, Anime, etc.)

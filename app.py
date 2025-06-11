@@ -49,6 +49,36 @@ def get_imdb_actor_image(actor_name):
         pass
     return None
 
+def get_anilist_actor_image(actor_name):
+    """
+    Try to fetch anime voice actor image from AniList GraphQL API.
+    Returns image URL or None.
+    """
+    try:
+        query = '''
+        query ($search: String) {
+          Staff(search: $search) {
+            image {
+              large
+              medium
+            }
+          }
+        }
+        '''
+        variables = {"search": actor_name}
+        url = "https://graphql.anilist.co"
+        response = requests.post(url, json={"query": query, "variables": variables}, timeout=3)
+        data = response.json()
+        image = (
+            data.get("data", {})
+                .get("Staff", {})
+                .get("image", {})
+                .get("large")
+        )
+        return image
+    except Exception:
+        return None
+
 def get_plex_libraries():
     if not PLEX_URL or not PLEX_TOKEN:
         return []
@@ -102,10 +132,13 @@ def get_random_movie(library_name=None):
             else:
                 # 2. Try IMDB (via DuckDuckGo image search)
                 actor_thumb = get_imdb_actor_image(actor.tag)
+                # 3. Try AniList (for anime/voice actors)
                 if not actor_thumb:
-                    # 3. Try Wikipedia
+                    actor_thumb = get_anilist_actor_image(actor.tag)
+                # 4. Try Wikipedia
+                if not actor_thumb:
                     actor_thumb = get_wikipedia_actor_image(actor.tag)
-                # 4. Fallback to placeholder if all else fails
+                # 5. Fallback to placeholder if all else fails
                 if not actor_thumb:
                     actor_thumb = "https://avatars.githubusercontent.com/u/72304665?v=4"
             cast.append({
