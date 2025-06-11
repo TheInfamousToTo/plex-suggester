@@ -107,7 +107,7 @@ def get_random_movie(library_name=None):
                     actor_thumb = get_wikipedia_actor_image(actor.tag)
                 # 4. Fallback to placeholder if all else fails
                 if not actor_thumb:
-                    actor_thumb = "https://upload.wikimedia.org/wikipedia/commons/3/32/Plex_Logo_2019.png"
+                    actor_thumb = "https://avatars.githubusercontent.com/u/72304665?v=4"
             cast.append({
                 "name": actor.tag,
                 "thumb": actor_thumb
