@@ -14,7 +14,7 @@ PLEX_TOKEN = os.getenv("PLEX_TOKEN")
 LIBRARY_NAME = os.getenv("PLEX_LIBRARY", "Movies")
 
 wiki_wiki = wikipediaapi.Wikipedia(
-    user_agent='PlexMovieSuggester/1.0 (bees751@hotmail.com)',  # Replace with your contact info
+    user_agent='PlexMovieSuggester/1.0 (example@mail.com)',  # Replace with your contact info
     language='en'
 )
 
