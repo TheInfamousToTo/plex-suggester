@@ -1,9 +1,25 @@
 # Plex Movie Suggester
 
-**Version 1.2.2**
+**Version 1.3**
 
 A simple Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
 It displays posters, cast info (with robust fallback images), and trailer links, with a sleek Plex-themed UI and a dropdown to select your library.
+
+---
+
+## 🚀 What's New in v1.3
+
+- **Like/Dislike Functionality:**  
+  Users can now like or dislike movies and shows.  
+  - Like/Dislike counts are displayed and update in real time.
+- **Dislike Support:**  
+  Dislike button and count added.
+- **JWT Authentication:**  
+  All like/dislike actions require a valid JWT token.
+- **UI Cleanup:**  
+  Like/Dislike buttons no longer display emojis, for a cleaner look.
+
+---
 
 ## Features
 
@@ -14,6 +30,7 @@ It displays posters, cast info (with robust fallback images), and trailer links,
 - "Suggest Another" button keeps your library selection
 - Dropdown menu to select any video library (Movies, TV, Anime, etc.)
 - Responsive, Plex-inspired UI
+- **NEW:** Like/Dislike buttons with real-time counts (v1.3)
 
 ## Environment Variables
 
@@ -102,6 +119,22 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 - Picks a random unwatched item from the selected library and displays its details.
 - Always provides a fallback image for cast and posters.
 - Allows refreshing for a new suggestion, keeping your library selection.
+- **NEW in v1.3:** Users can like or dislike a movie/show, and see the current counts.
+
+## 🔑 Like/Dislike API (v1.3+)
+
+- **Like a movie:**  
+  `POST /like/<movie_id>` (JWT required)
+- **Unlike a movie:**  
+  `DELETE /like/<movie_id>` (JWT required)
+- **Dislike a movie:**  
+  `POST /dislike/<movie_id>` (JWT required)
+- **Remove dislike:**  
+  `DELETE /dislike/<movie_id>` (JWT required)
+- **Get like count:**  
+  `GET /like-count/<movie_id>`
+- **Get dislike count:**  
+  `GET /dislike-count/<movie_id>`
 
 ## Troubleshooting
 

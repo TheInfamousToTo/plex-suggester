@@ -194,6 +194,58 @@
       <div class="movie-title">{{ movie.title }}{% if movie.year %} ({{ movie.year }}){% endif %}</div>
       <div class="summary">{{ movie.summary }}</div>
 
+      <!-- Like/Unlike Buttons -->
+      <div id="like-dislike" style="margin: 1.5em 0;">
+        <button id="like-btn" class="btn" onclick="likeMovie()"> Like</button>
+        <span id="like-count" style="margin-left:1em;"></span>
+        <button id="dislike-btn" class="btn" onclick="dislikeMovie()"> Dislike</button>
+        <span id="dislike-count" style="margin-left:1em;"></span>
+      </div>
+      <script>
+        const API_BASE = "https://plex-like.satrawi.cc";
+        const JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LXVzZXItaWQiLCJuYW1lIjoiVGVzdCBVc2VyIiwiaWF0IjoxNzUwMjczMTAzLCJleHAiOjIwNjU2MzMxMDN9.AxfHa6pqAjAzfiw6F23qq0NbQD0A6Rf0gBuzL3P0XB4";
+        const movieKey = "{{ movie.key|e }}";
+        function getMovieId(key) {
+          const match = key.match(/(\d+)$/);
+          return match ? match[1] : key;
+        }
+        const movieId = getMovieId(movieKey);
+
+        function updateLikeCount() {
+          fetch(`${API_BASE}/like-count/${encodeURIComponent(movieId)}`)
+            .then(r => r.json())
+            .then(data => {
+              document.getElementById('like-count').textContent = ` ${data.count || 0}`;
+            });
+          fetch(`${API_BASE}/dislike-count/${encodeURIComponent(movieId)}`)
+            .then(r => r.json())
+            .then(data => {
+              document.getElementById('dislike-count').textContent = ` ${data.count || 0}`;
+            });
+        }
+
+        function likeMovie() {
+          fetch(`${API_BASE}/like/${encodeURIComponent(movieId)}`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${JWT_TOKEN}`
+            }
+          }).then(() => updateLikeCount());
+        }
+
+        function dislikeMovie() {
+          fetch(`${API_BASE}/dislike/${encodeURIComponent(movieId)}`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${JWT_TOKEN}`
+            }
+          }).then(() => updateLikeCount());
+        }
+
+        // Initial load
+        updateLikeCount();
+      </script>
+
       {% if movie.cast %}
       <h3>Top Cast</h3>
       <div class="cast">
