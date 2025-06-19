@@ -2,9 +2,10 @@ import os
 import random
 import re
 import requests
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 from plexapi.server import PlexServer
 import wikipediaapi
+from io import BytesIO
 
 app = Flask(__name__)
 
@@ -119,7 +120,8 @@ def get_random_movie(library_name=None):
 
         # Poster URL with token or fallback
         if getattr(item, "thumb", None):
-            item.poster_url = f"{PLEX_URL}{item.thumb}?X-Plex-Token={PLEX_TOKEN}"
+            # Use proxy route instead of direct Plex URL
+            item.poster_url = f"/poster{item.thumb}"
         else:
             item.poster_url = "https://avatars.githubusercontent.com/u/72304665?v=4"
 
@@ -181,6 +183,18 @@ def home():
     libraries = get_plex_libraries()
     error, movie = get_random_movie(selected_library)
     return render_template("index.html", error=error, movie=movie, libraries=libraries, selected_library=selected_library)
+
+@app.route("/poster/<path:item_key>")
+def proxy_poster(item_key):
+    # item_key will be like 'library/metadata/12345/thumb'
+    plex_url = f"{PLEX_URL}/{item_key}?X-Plex-Token={PLEX_TOKEN}"
+    try:
+        resp = requests.get(plex_url, timeout=5)
+        resp.raise_for_status()
+        return send_file(BytesIO(resp.content), mimetype=resp.headers.get("Content-Type", "image/jpeg"))
+    except Exception:
+        # fallback image
+        return requests.get("https://via.placeholder.com/250x375?text=No+Image").content, 200, {'Content-Type': 'image/jpeg'}
 
 
 if __name__ == "__main__":

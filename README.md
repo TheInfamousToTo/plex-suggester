@@ -2,10 +2,19 @@
 
 # Plex Movie Suggester 
 
-**Version 1.3**
+**Version 1.3.2**
 
 A simple Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
-It displays posters, cast info (with robust fallback images), and trailer links, with a sleek Plex-themed UI and a dropdown to select your library.
+It displays posters (proxied through the app for public access), cast info (with robust fallback images), and trailer links, with a sleek Plex-themed UI and a dropdown to select your library.
+
+---
+
+## 🚀 What's New in v1.3.2
+
+- **Plex Poster Proxy:**  
+  Poster images are now always visible, even when the app is hosted behind a Cloudflare Tunnel or reverse proxy. Posters are fetched from your Plex server by the Flask backend and served to the frontend, so they are accessible from anywhere.
+- **Version bump:**  
+  Updated version to 1.3.2
 
 ---
 
@@ -30,13 +39,14 @@ It displays posters, cast info (with robust fallback images), and trailer links,
 ## Features
 
 - Suggests a random unwatched movie, show, anime, or other video from your Plex library
+- **Posters are always visible** (even when hosted behind a tunnel), thanks to backend proxying
 - Shows poster and summary (with fallback images if missing)
 - Displays top cast with images (tries Plex, IMDB, AniList, Wikipedia, then always a Plex logo fallback)
 - Links to trailer and direct "Watch on Plex"
 - "Suggest Another" button keeps your library selection
 - Dropdown menu to select any video library (Movies, TV, Anime, etc.)
 - Responsive, Plex-inspired UI
-- **NEW:** Like/Dislike buttons with real-time counts (v1.3)
+- **Like/Dislike buttons** with real-time counts (v1.3+)
 
 ## Environment Variables
 
@@ -125,10 +135,11 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 - Connects to your Plex server using the provided URL and token.
 - Fetches all video libraries (Movies, TV, Anime, etc.).
 - Picks a random unwatched item from the selected library and displays its details.
+- **Posters are always visible**: The app proxies poster images from Plex, so they are accessible even when the app is public and Plex is private.
 - Always provides a fallback image for cast and posters.
 - Allows refreshing for a new suggestion, keeping your library selection.
-- **NEW in v1.3:** Users can like or dislike a movie/show, and see the current counts.
-- **NEW:** JWTs are securely issued by the backend using a unique user ID from the frontend.
+- **Like/Dislike:** Users can like or dislike a movie/show, and see the current counts.
+- **JWTs** are securely issued by the backend using a unique user ID from the frontend.
 
 ## 🔑 Like/Dislike API (v1.3+)
 
@@ -147,8 +158,9 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 
 ## Troubleshooting
 
-- Ensure your Plex server is accessible from where you run the app.
+- Ensure your Plex server is accessible from where you run the app (the app must be able to reach Plex).
 - Double-check your Plex token and library name.
+- If posters are not visible, ensure the backend can reach your Plex server.
 - Check logs for errors if the app fails to connect or display items.
 
 ## License
