@@ -203,7 +203,6 @@
       </div>
       <script>
         const API_BASE = "https://plex-like.satrawi.cc";
-        const JWT_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LXVzZXItaWQiLCJuYW1lIjoiVGVzdCBVc2VyIiwiaWF0IjoxNzUwMjczMTAzLCJleHAiOjIwNjU2MzMxMDN9.AxfHa6pqAjAzfiw6F23qq0NbQD0A6Rf0gBuzL3P0XB4";
         const movieKey = "{{ movie.key|e }}";
         function getMovieId(key) {
           const match = key.match(/(\d+)$/);
@@ -272,5 +271,39 @@
       <p>No movie found.</p>
     {% endif %}
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsrsasign@10.8.7/lib/jsrsasign-all-min.js"></script>
+  <script>
+  // Generate a UUID (RFC4122 version 4)
+  function generateUUID() {
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
+  }
+
+  // Get or create user ID
+  function getUserId() {
+    let userId = localStorage.getItem('plex_suggester_user_id');
+    if (!userId) {
+      userId = generateUUID();
+      localStorage.setItem('plex_suggester_user_id', userId);
+    }
+    return userId;
+  }
+  const USER_ID = getUserId();
+
+  async function fetchJWT(userId) {
+    const res = await fetch(`https://plex-like.satrawi.cc/get-jwt?user_id=${encodeURIComponent(userId)}`);
+    const data = await res.json();
+    return data.token;
+  }
+
+  let JWT_TOKEN = null;
+
+  fetchJWT(USER_ID).then(token => {
+    JWT_TOKEN = token;
+    // Now you can use JWT_TOKEN in your API calls
+  });
+  </script>
 </body>
 </html>

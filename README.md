@@ -20,6 +20,10 @@ It displays posters, cast info (with robust fallback images), and trailer links,
   All like/dislike actions require a valid JWT token.
 - **UI Cleanup:**  
   Like/Dislike buttons no longer display emojis, for a cleaner look.
+- **Frontend User ID:**  
+  Each user gets a unique, persistent ID stored in their browser. JWTs are generated server-side using this ID as the `sub` claim.
+- **No Secret in Frontend:**  
+  JWT secrets are never exposed to the frontend. All JWTs are issued by the backend.
 
 ---
 
@@ -39,6 +43,7 @@ It displays posters, cast info (with robust fallback images), and trailer links,
 - `PLEX_URL`: Your Plex server URL (e.g. `http://192.168.1.100:32400`)
 - `PLEX_TOKEN`: Your Plex authentication token
 - `PLEX_LIBRARY`: Default Plex library to suggest from (default: "Movies")
+- `JWT_SECRET`: Secret used to sign JWTs (required for like/dislike API)
 
 ## Usage
 
@@ -49,6 +54,7 @@ docker run -d -p 5000:5000 \
   -e PLEX_URL="http://your-plex-server:32400" \
   -e PLEX_TOKEN="your-plex-token" \
   -e PLEX_LIBRARY="Movies" \
+  -e JWT_SECRET="your-jwt-secret" \
   theinfamoustoto/plex-suggester:latest
 ```
 
@@ -122,6 +128,7 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 - Always provides a fallback image for cast and posters.
 - Allows refreshing for a new suggestion, keeping your library selection.
 - **NEW in v1.3:** Users can like or dislike a movie/show, and see the current counts.
+- **NEW:** JWTs are securely issued by the backend using a unique user ID from the frontend.
 
 ## 🔑 Like/Dislike API (v1.3+)
 
