@@ -1,6 +1,6 @@
 ![Plex Suggester Logo](assets/logo.png)
 
-# Plex Movie Suggester
+# Plex Movie Suggester 
 
 **Version 1.3**
 
