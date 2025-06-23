@@ -53,7 +53,6 @@ It displays posters (proxied through the app for public access), cast info (with
 - `PLEX_URL`: Your Plex server URL (e.g. `http://192.168.1.100:32400`)
 - `PLEX_TOKEN`: Your Plex authentication token
 - `PLEX_LIBRARY`: Default Plex library to suggest from (default: "Movies")
-- `JWT_SECRET`: Secret used to sign JWTs (required for like/dislike API)
 
 ## Usage
 
@@ -64,7 +63,6 @@ docker run -d -p 5000:5000 \
   -e PLEX_URL="http://your-plex-server:32400" \
   -e PLEX_TOKEN="your-plex-token" \
   -e PLEX_LIBRARY="Movies" \
-  -e JWT_SECRET="your-jwt-secret" \
   theinfamoustoto/plex-suggester:latest
 ```
 
@@ -144,13 +142,13 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 ## 🔑 Like/Dislike API (v1.3+)
 
 - **Like a movie:**  
-  `POST /like/<movie_id>` (JWT required)
+  `POST /like/<movie_id>`
 - **Unlike a movie:**  
-  `DELETE /like/<movie_id>` (JWT required)
+  `DELETE /like/<movie_id>`
 - **Dislike a movie:**  
-  `POST /dislike/<movie_id>` (JWT required)
+  `POST /dislike/<movie_id>`
 - **Remove dislike:**  
-  `DELETE /dislike/<movie_id>` (JWT required)
+  `DELETE /dislike/<movie_id>` 
 - **Get like count:**  
   `GET /like-count/<movie_id>`
 - **Get dislike count:**  
