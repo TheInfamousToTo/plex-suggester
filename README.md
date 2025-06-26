@@ -2,10 +2,27 @@
 
 # Plex Movie Suggester 
 
-**Version 1.3.2**
+**Version 1.4**
 
-A simple Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
-It displays posters (proxied through the app for public access), cast info (with robust fallback images), and trailer links, with a sleek Plex-themed UI and a dropdown to select your library.
+A modern Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
+Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, and comprehensive user engagement tracking.
+
+---
+
+## 🚀 What's New in v1.4
+
+- **Modern UI Overhaul:**  
+  Complete visual redesign with glass morphism effects, modern typography (Inter + Poppins fonts), and enhanced animations.
+- **Watch Count Tracking:**  
+  Track how many users clicked "Watch on Plex" for each item with an eye icon counter.
+- **Enhanced Cast Section:**  
+  Modern grid layout with glass cards, improved hover effects, and better responsive design.
+- **Improved Interactive Elements:**  
+  Better buttons with gradient effects, shimmer animations, and consistent Plex theming.
+- **GitHub Integration:**  
+  Quick access to the project repository via a GitHub icon in the top-left corner.
+- **Enhanced Typography:**  
+  Gradient text effects for titles and improved readability throughout.
 
 ---
 
@@ -39,14 +56,20 @@ It displays posters (proxied through the app for public access), cast info (with
 ## Features
 
 - Suggests a random unwatched movie, show, anime, or other video from your Plex library
+- **Modern glass morphism UI** with enhanced visual effects and animations
 - **Posters are always visible** (even when hosted behind a tunnel), thanks to backend proxying
-- Shows poster and summary (with fallback images if missing)
-- Displays top cast with images (tries Plex, IMDB, AniList, Wikipedia, then always a Plex logo fallback)
+- Shows poster and summary with beautiful card designs and gradient effects
+- **Enhanced cast section** with modern grid layout and interactive cards
+- Displays top cast with images (tries Plex, IMDB, AniList, Wikipedia, then fallback)
 - Links to trailer and direct "Watch on Plex"
-- "Suggest Another" button keeps your library selection
+- **Watch count tracking** displays how many users clicked "Watch on Plex" for each item
+- **GitHub integration** with quick access to project repository
+- "Suggest Another" button with modern styling keeps your library selection
+- **Custom dropdown menu** with Plex theming and smooth animations
 - Dropdown menu to select any video library (Movies, TV, Anime, etc.)
-- Responsive, Plex-inspired UI
-- **Like/Dislike buttons** with real-time counts (v1.3+)
+- **Fully responsive design** optimized for mobile, tablet, and desktop
+- **Like/Dislike buttons** with real-time counts and modern icons
+- **Professional typography** using Inter and Poppins fonts
 
 ## Environment Variables
 
@@ -133,13 +156,16 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 - Connects to your Plex server using the provided URL and token.
 - Fetches all video libraries (Movies, TV, Anime, etc.).
 - Picks a random unwatched item from the selected library and displays its details.
-- **Posters are always visible**: The app proxies poster images from Plex, so they are accessible even when the app is public and Plex is private.
-- Always provides a fallback image for cast and posters.
-- Allows refreshing for a new suggestion, keeping your library selection.
-- **Like/Dislike:** Users can like or dislike a movie/show, and see the current counts.
-- **JWTs** are securely issued by the backend using a unique user ID from the frontend.
+- **How it Works** section updated to reflect modern UI and enhanced features
+- **Like/Dislike/Watch API** with comprehensive tracking capabilities
+- **Enhanced visual design** with glass morphism and modern animations
+- **Always provides fallback images** for cast and posters with Plex-themed placeholders
+- Allows refreshing for new suggestions while keeping library selection
+- **Real-time engagement tracking** with like, dislike, and watch counts
+- **Secure JWT authentication** for all user interactions
+- **Modern responsive design** that works beautifully on all devices
 
-## 🔑 Like/Dislike API (v1.3+)
+## 🔑 Like/Dislike/Watch API (v1.3+)
 
 - **Like a movie:**  
   `POST /like/<movie_id>`
@@ -148,11 +174,15 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 - **Dislike a movie:**  
   `POST /dislike/<movie_id>`
 - **Remove dislike:**  
-  `DELETE /dislike/<movie_id>` 
+  `DELETE /dislike/<movie_id>`
+- **Track watch:**  
+  `POST /watch/<movie_id>`
 - **Get like count:**  
   `GET /like-count/<movie_id>`
 - **Get dislike count:**  
   `GET /dislike-count/<movie_id>`
+- **Get watch count:**  
+  `GET /watch-count/<movie_id>`
 
 ## Troubleshooting
 
