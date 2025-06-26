@@ -1,11 +1,22 @@
 ![Plex Suggester Logo](assets/logo.png)
 
-# Plex Movie Suggester 
+# Plex Movie Suggester
 
-**Version 1.4**
+**Version 1.4.1**
 
 A modern Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
 Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, and comprehensive user engagement tracking.
+
+---
+
+## 🚀 What's New in v1.4.1
+
+- **Enhanced Button Layout:**  
+  Trailer button is now positioned alongside "Watch on Plex" and "Suggest Another" buttons for better user experience.
+- **Consistent Plex Theming:**  
+  Trailer button now uses the same brown/gold Plex color scheme as the rest of the interface.
+- **Improved UI Consistency:**  
+  All action buttons now follow the same design language and hover effects.
 
 ---
 
@@ -21,6 +32,8 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
   Better buttons with gradient effects, shimmer animations, and consistent Plex theming.
 - **GitHub Integration:**  
   Quick access to the project repository via a GitHub icon in the top-left corner.
+- **External Trailer Support:**  
+  Watch trailers directly from YouTube/internet sources instead of Plex-hosted trailers.
 - **Enhanced Typography:**  
   Gradient text effects for titles and improved readability throughout.
 
@@ -62,6 +75,7 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 - **Enhanced cast section** with modern grid layout and interactive cards
 - Displays top cast with images (tries Plex, IMDB, AniList, Wikipedia, then fallback)
 - Links to trailer and direct "Watch on Plex"
+- **External trailer integration** with YouTube/internet sources for better accessibility
 - **Watch count tracking** displays how many users clicked "Watch on Plex" for each item
 - **GitHub integration** with quick access to project repository
 - "Suggest Another" button with modern styling keeps your library selection
@@ -117,17 +131,20 @@ docker compose up -d
 ### Running Locally
 
 1. Clone the repository:
+
     ```bash
     git clone https://github.com/theinfamoustoto/plex-suggester.git
     cd plex-suggester
     ```
 
 2. Install dependencies:
+
     ```bash
     pip install -r requirements.txt
     ```
 
 3. Set environment variables:
+
     ```bash
     export PLEX_URL="http://your-plex-server:32400"
     export PLEX_TOKEN="your-plex-token"
@@ -135,9 +152,11 @@ docker compose up -d
     ```
 
 4. Run the app:
+
     ```bash
     python app.py
     ```
+
     The app will be available at [http://localhost:5000](http://localhost:5000).
 
 ## Docker

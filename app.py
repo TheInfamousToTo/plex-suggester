@@ -2,6 +2,7 @@ import os
 import random
 import re
 import requests
+import urllib.parse
 from flask import Flask, render_template, request, send_file
 from plexapi.server import PlexServer
 import wikipediaapi
@@ -149,7 +150,13 @@ def get_random_movie(library_name=None):
             })
         item.cast = cast
 
-        # Trailer URL (if available)
+        # External Trailer URL (YouTube/TMDB)
+        try:
+            item.external_trailer_url = get_external_trailer_url(item.title, getattr(item, 'year', None))
+        except Exception:
+            item.external_trailer_url = None
+
+        # Plex Trailer URL (if available) - keeping for compatibility
         try:
             trailer = next((e for e in getattr(item, "extras", lambda: [])() if 'trailer' in e.type.lower()), None)
             item.trailer_url = trailer.url if trailer else None
@@ -175,6 +182,55 @@ def get_random_movie(library_name=None):
 
     except Exception as e:
         return f"❌ Error: {e}", None
+
+def get_external_trailer_url(title, year=None):
+    """
+    Try to fetch external trailer URL from YouTube or TMDB.
+    Returns trailer URL or None.
+    """
+    try:
+        # Clean title for search
+        search_title = title.replace(":", "").replace("-", " ")
+        if year:
+            search_query = f"{search_title} {year} trailer"
+        else:
+            search_query = f"{search_title} trailer"
+        
+        # Try YouTube search via DuckDuckGo (simple approach)
+        query = urllib.parse.quote_plus(search_query + " site:youtube.com")
+        search_url = f"https://duckduckgo.com/html/?q={query}"
+        
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        
+        response = requests.get(search_url, headers=headers, timeout=5)
+        html = response.text
+        
+        # Look for YouTube URLs in the response
+        youtube_pattern = r'https://www\.youtube\.com/watch\?v=([a-zA-Z0-9_-]+)'
+        matches = re.findall(youtube_pattern, html)
+        
+        if matches:
+            # Return the first YouTube URL found
+            return f"https://www.youtube.com/watch?v={matches[0]}"
+            
+    except Exception:
+        pass
+    
+    # Fallback: try a simple YouTube search URL
+    try:
+        if year:
+            search_term = f"{title} {year} official trailer"
+        else:
+            search_term = f"{title} official trailer"
+        
+        search_term = urllib.parse.quote_plus(search_term)
+        return f"https://www.youtube.com/results?search_query={search_term}"
+    except Exception:
+        pass
+    
+    return None
 
 
 @app.route("/", methods=["GET"])
