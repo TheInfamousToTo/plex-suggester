@@ -18,7 +18,7 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 - **Settings Management:**  
   Built-in settings modal allows users to securely manage their Plex tokens when not using environment variables.
 - **Enhanced UI/UX:**  
-  Settings button moved next to dropdown as icon-only for cleaner interface; improved blur overlay coverage.
+  Settings button repositioned next to dropdown as elegant icon-only design; fixed blur overlay gaps for seamless full-screen coverage; improved responsive design for all devices.
 - **Bearer Token API:**  
   API requests use Bearer token authentication when required for enhanced security.
 - **Improved Security:**  
