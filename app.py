@@ -16,6 +16,12 @@ app = Flask(__name__)
 # JWT Secret Key - should be set via environment variable in production
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
 
+# Enable sessions for caching
+app.secret_key = os.getenv("FLASK_SECRET_KEY", JWT_SECRET_KEY)
+
+# Backend API configuration
+BACKEND_API_URL = os.getenv("BACKEND_API_URL", "https://plex-like.satrawi.cc")
+
 # Plex config from environment
 PLEX_URL = os.getenv("PLEX_URL")
 PLEX_TOKEN = os.getenv("PLEX_TOKEN")
@@ -47,6 +53,39 @@ def generate_jwt_token(plex_token):
         'iat': datetime.datetime.utcnow()
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm='HS256')
+
+def get_backend_jwt_token(plex_token):
+    """Get JWT token from backend service using Plex token"""
+    try:
+        response = requests.post(
+            f"{BACKEND_API_URL}/auth/plex",
+            json={"plex_token": plex_token},
+            timeout=10
+        )
+        if response.status_code == 200:
+            data = response.json()
+            return data.get('token')
+        return None
+    except Exception as e:
+        print(f"Failed to get backend JWT token: {e}")
+        return None
+
+def make_backend_request(method, endpoint, headers=None, json_data=None, params=None):
+    """Make authenticated request to backend API"""
+    url = f"{BACKEND_API_URL}{endpoint}"
+    try:
+        response = requests.request(
+            method=method,
+            url=url,
+            headers=headers or {},
+            json=json_data,
+            params=params,
+            timeout=10
+        )
+        return response
+    except Exception as e:
+        print(f"Backend request failed: {e}")
+        return None
 
 def verify_jwt_token(token):
     """Verify and decode JWT token"""
@@ -160,6 +199,52 @@ def get_plex_libraries(plex_token=None):
         ]
     except Exception:
         return []
+
+def get_random_movie_lightweight(library_name=None, plex_token=None):
+    """Optimized version for match rooms - only gets essential data"""
+    # Use provided token or fallback to environment variable
+    token = plex_token or PLEX_TOKEN
+    if not PLEX_URL or not token:
+        return "⚠️ Please set PLEX_URL and PLEX_TOKEN environment variables.", None
+
+    try:
+        plex = PlexServer(PLEX_URL, token)
+        lib_name = library_name or LIBRARY_NAME
+        section = plex.library.section(lib_name)
+        
+        # Suggest a random unwatched movie or show
+        if section.type == "movie":
+            items = section.search(unwatched=True)
+        elif section.type in ("show", "anime"):
+            # Suggest a random show with unwatched episodes
+            shows = section.search()
+            items = [show for show in shows if any(not ep.isWatched for ep in show.episodes())]
+        else:
+            items = section.search(unwatched=True)
+
+        if not items:
+            return "✅ No unwatched items found!", None
+
+        item = random.choice(items)
+
+        # Only get essential data - no expensive operations
+        # Poster URL with token or fallback
+        if getattr(item, "thumb", None):
+            # Use proxy route instead of direct Plex URL
+            item.poster_url = f"/poster{item.thumb}"
+        else:
+            item.poster_url = "https://avatars.githubusercontent.com/u/72304665?v=4"
+
+        # Watch on Plex URL
+        try:
+            item.watch_url = f"{PLEX_URL}/web/index.html#!/server/{plex.machineIdentifier}/details?key=/library/metadata/{item.ratingKey}"
+        except Exception:
+            item.watch_url = None
+
+        return None, item
+
+    except Exception as e:
+        return f"❌ Error getting random movie: {str(e)}", None
 
 def get_random_movie(library_name=None, plex_token=None):
     # Use provided token or fallback to environment variable
@@ -363,6 +448,398 @@ def api_suggest():
     except Exception as e:
         return jsonify({'error': f'Failed to get suggestion: {str(e)}'}), 500
 
+# ==================== MOVIE MATCH API ENDPOINTS ====================
+
+@app.route("/api/match/rooms", methods=["POST"])
+@token_required
+def create_match_room():
+    """Create a new movie matching room using backend service"""
+    try:
+        data = request.get_json()
+        room_name = data.get('name', 'Movie Night')
+        library_filter = data.get('library', 'Movies')
+        min_participants = data.get('min_participants', 2)
+        creator_username = data.get('creator_username', 'Anonymous')
+        
+        # Get backend JWT token
+        backend_token = get_backend_jwt_token(request.plex_token)
+        if not backend_token:
+            return jsonify({'error': 'Failed to authenticate with backend'}), 401
+        
+        # Create room data for backend
+        room_data = {
+            'name': room_name,
+            'library_filter': library_filter,
+            'min_participants': min_participants,
+            'creator_username': creator_username
+        }
+        
+        # Make request to backend
+        response = make_backend_request(
+            'POST',
+            '/match/rooms',
+            headers={'Authorization': f'Bearer {backend_token}'},
+            json_data=room_data
+        )
+        
+        if response and response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            error_msg = response.json().get('detail', 'Failed to create room') if response else 'Backend unavailable'
+            return jsonify({'error': error_msg}), 500
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to create room: {str(e)}'}), 500
+
+@app.route("/api/match/rooms", methods=["GET"])
+@token_required  
+def list_match_rooms():
+    """List all active movie matching rooms using backend service"""
+    try:
+        # Get backend JWT token
+        backend_token = get_backend_jwt_token(request.plex_token)
+        if not backend_token:
+            return jsonify({'error': 'Failed to authenticate with backend'}), 401
+        
+        # Make request to backend
+        response = make_backend_request(
+            'GET',
+            '/match/rooms',
+            headers={'Authorization': f'Bearer {backend_token}'}
+        )
+        
+        if response and response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            error_msg = response.json().get('detail', 'Failed to list rooms') if response else 'Backend unavailable'
+            return jsonify({'error': error_msg}), 500
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to list rooms: {str(e)}'}), 500
+
+@app.route("/api/match/rooms/<room_id>/join", methods=["POST"])
+@token_required
+def join_match_room(room_id):
+    """Join a movie matching room using backend service"""
+    try:
+        data = request.get_json()
+        username = data.get('username', 'Anonymous')
+        
+        # Get backend JWT token
+        backend_token = get_backend_jwt_token(request.plex_token)
+        if not backend_token:
+            return jsonify({'error': 'Failed to authenticate with backend'}), 401
+        
+        join_data = {
+            'username': username
+        }
+        
+        response = make_backend_request(
+            'POST',
+            f'/match/rooms/{room_id}/join',
+            headers={'Authorization': f'Bearer {backend_token}'},
+            json_data=join_data
+        )
+        
+        if response and response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            error_msg = response.json().get('detail', 'Failed to join room') if response else 'Backend unavailable'
+            return jsonify({'error': error_msg}), 400
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to join room: {str(e)}'}), 500
+
+@app.route("/api/match/rooms/<room_id>", methods=["GET"])
+@token_required
+def get_match_room(room_id):
+    """Get room information using backend service"""
+    try:
+        # Get backend JWT token
+        backend_token = get_backend_jwt_token(request.plex_token)
+        if not backend_token:
+            return jsonify({'error': 'Failed to authenticate with backend'}), 401
+        
+        response = make_backend_request(
+            'GET',
+            f'/match/rooms/{room_id}',
+            headers={'Authorization': f'Bearer {backend_token}'}
+        )
+        
+        if response and response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            error_msg = response.json().get('detail', 'Room not found') if response else 'Backend unavailable'
+            return jsonify({'error': error_msg}), 404
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to get room info: {str(e)}'}), 500
+
+@app.route("/api/match/rooms/<room_id>/next-movie", methods=["GET"])
+@token_required
+def get_next_movie_for_match(room_id):
+    """Get next movie for user to swipe on - optimized version"""
+    try:
+        # Get backend JWT token
+        backend_token = get_backend_jwt_token(request.plex_token)
+        if not backend_token:
+            return jsonify({'error': 'Failed to authenticate with backend'}), 401
+        
+        # Use session-based caching for user swipes to reduce API calls
+        from flask import session
+        cache_key = f"swipes_{room_id}_{hash(request.plex_token)}"
+        
+        # Check if we have cached swipes (refresh every 30 seconds)
+        import time
+        current_time = time.time()
+        cached_data = session.get(cache_key)
+        cache_valid = (cached_data and 
+                      isinstance(cached_data, dict) and 
+                      'timestamp' in cached_data and 
+                      current_time - cached_data['timestamp'] < 30)
+        
+        if cache_valid:
+            swiped_movies = set(cached_data['swiped_movies'])
+            library_name = cached_data['library_name']
+        else:
+            # Fetch both room info and user swipes
+            import concurrent.futures
+            
+            def get_swipes():
+                response = make_backend_request(
+                    'GET',
+                    f'/match/rooms/{room_id}/user-swipes',
+                    headers={'Authorization': f'Bearer {backend_token}'}
+                )
+                if response and response.status_code == 200:
+                    return set(response.json().get('swiped_movies', []))
+                return set()
+            
+            def get_room():
+                response = make_backend_request(
+                    'GET',
+                    f'/match/rooms/{room_id}',
+                    headers={'Authorization': f'Bearer {backend_token}'}
+                )
+                if response and response.status_code == 200:
+                    return response.json().get('library_filter', 'Movies')
+                return 'Movies'
+            
+            # Execute both requests in parallel
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                swipes_future = executor.submit(get_swipes)
+                room_future = executor.submit(get_room)
+                
+                swiped_movies = swipes_future.result()
+                library_name = room_future.result()
+            
+            # Cache the results
+            session[cache_key] = {
+                'swiped_movies': list(swiped_movies),
+                'library_name': library_name,
+                'timestamp': current_time
+            }
+        
+        # Try up to 3 times to find an unswiped movie (reduced from 5)
+        for _ in range(3):
+            error, movie = get_random_movie_lightweight(library_name, request.plex_token)
+            if error:
+                continue
+            
+            movie_id = str(movie.ratingKey)
+            if movie_id not in swiped_movies:
+                # Convert movie object to dictionary with minimal data
+                movie_data = {
+                    'id': movie_id,
+                    'title': getattr(movie, 'title', ''),
+                    'year': getattr(movie, 'year', ''),
+                    'summary': getattr(movie, 'summary', ''),
+                    'poster_url': getattr(movie, 'poster_url', ''),
+                }
+                return jsonify({'movie': movie_data})
+        
+        # No more movies found
+        return jsonify({'message': 'No more movies to swipe'}), 204
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get next movie: {str(e)}'}), 500
+
+@app.route("/api/match/rooms/<room_id>/swipe", methods=["POST"])
+@token_required
+def swipe_movie_in_room(room_id):
+    """Record a swipe on a movie using backend service"""
+    try:
+        data = request.get_json()
+        movie_id = data.get('movie_id')
+        movie_title = data.get('movie_title', '')
+        movie_year = data.get('movie_year')
+        direction = data.get('direction')  # 'left', 'right', 'super'
+        
+        if not all([movie_id, direction]):
+            return jsonify({'error': 'movie_id and direction required'}), 400
+        
+        if direction not in ['left', 'right', 'super']:
+            return jsonify({'error': 'direction must be left, right, or super'}), 400
+        
+        # Get backend JWT token
+        backend_token = get_backend_jwt_token(request.plex_token)
+        if not backend_token:
+            return jsonify({'error': 'Failed to authenticate with backend'}), 401
+        
+        swipe_data = {
+            'movie_id': movie_id,
+            'movie_title': movie_title,
+            'movie_year': movie_year,
+            'direction': direction
+        }
+        
+        response = make_backend_request(
+            'POST',
+            f'/match/rooms/{room_id}/swipe',
+            headers={'Authorization': f'Bearer {backend_token}'},
+            json_data=swipe_data
+        )
+        
+        if response and response.status_code == 200:
+            # Invalidate the cache for this user/room since they swiped
+            from flask import session
+            cache_key = f"swipes_{room_id}_{hash(request.plex_token)}"
+            if cache_key in session:
+                del session[cache_key]
+            
+            return jsonify(response.json())
+        else:
+            error_msg = response.json().get('detail', 'Failed to record swipe') if response else 'Backend unavailable'
+            return jsonify({'error': error_msg}), 500
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to record swipe: {str(e)}'}), 500
+
+@app.route("/api/match/rooms/<room_id>/matches", methods=["GET"])
+@token_required
+def get_room_matches(room_id):
+    """Get current matches for the room using backend service"""
+    try:
+        # Get backend JWT token
+        backend_token = get_backend_jwt_token(request.plex_token)
+        if not backend_token:
+            return jsonify({'error': 'Failed to authenticate with backend'}), 401
+        
+        response = make_backend_request(
+            'GET',
+            f'/match/rooms/{room_id}/matches',
+            headers={'Authorization': f'Bearer {backend_token}'}
+        )
+        
+        if response and response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            error_msg = response.json().get('detail', 'Failed to get matches') if response else 'Backend unavailable'
+            return jsonify({'error': error_msg}), 500
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to get matches: {str(e)}'}), 500
+
+@app.route("/api/match/rooms/<room_id>/movies/<int:count>", methods=["GET"])
+@token_required
+def get_multiple_movies_for_match(room_id, count):
+    """Get multiple movies for matching room - super fast batch implementation"""
+    try:
+        # Limit count to prevent abuse
+        if count > 10:
+            count = 10
+        if count < 1:
+            count = 1
+            
+        # Get backend JWT token
+        backend_token = get_backend_jwt_token(request.plex_token)
+        if not backend_token:
+            return jsonify({'error': 'Failed to authenticate with backend'}), 401
+        
+        # Use session-based caching for batch requests too
+        from flask import session
+        import time
+        cache_key = f"swipes_{room_id}_{hash(request.plex_token)}"
+        current_time = time.time()
+        cached_data = session.get(cache_key)
+        cache_valid = (cached_data and 
+                      isinstance(cached_data, dict) and 
+                      'timestamp' in cached_data and 
+                      current_time - cached_data['timestamp'] < 30)
+        
+        if cache_valid:
+            swiped_movies = set(cached_data['swiped_movies'])
+            library_name = cached_data['library_name']
+        else:
+            # Fetch user swipes and room info in parallel
+            import concurrent.futures
+            
+            def get_swiped_movies():
+                response = make_backend_request(
+                    'GET',
+                    f'/match/rooms/{room_id}/user-swipes',
+                    headers={'Authorization': f'Bearer {backend_token}'}
+                )
+                if response and response.status_code == 200:
+                    return set(response.json().get('swiped_movies', []))
+                return set()
+            
+            def get_room_info():
+                response = make_backend_request(
+                    'GET',
+                    f'/match/rooms/{room_id}',
+                    headers={'Authorization': f'Bearer {backend_token}'}
+                )
+                if response and response.status_code == 200:
+                    return response.json().get('library_filter', 'Movies')
+                return 'Movies'
+            
+            # Execute both requests concurrently
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+                swiped_future = executor.submit(get_swiped_movies)
+                room_future = executor.submit(get_room_info)
+                
+                swiped_movies = swiped_future.result()
+                library_name = room_future.result()
+            
+            # Cache the results
+            session[cache_key] = {
+                'swiped_movies': list(swiped_movies),
+                'library_name': library_name,
+                'timestamp': current_time
+            }
+        
+        # Generate movies quickly
+        movies = []
+        attempts = 0
+        max_attempts = count * 2  # Reduced attempts for speed
+        
+        while len(movies) < count and attempts < max_attempts:
+            attempts += 1
+            error, movie = get_random_movie_lightweight(library_name, request.plex_token)
+            if error:
+                continue
+            
+            movie_id = str(movie.ratingKey)
+            if movie_id not in swiped_movies:
+                # Minimal movie data for speed
+                movie_data = {
+                    'id': movie_id,
+                    'title': getattr(movie, 'title', ''),
+                    'year': getattr(movie, 'year', ''),
+                    'summary': getattr(movie, 'summary', ''),
+                    'poster_url': getattr(movie, 'poster_url', ''),
+                }
+                movies.append(movie_data)
+                swiped_movies.add(movie_id)  # Prevent duplicates in same batch
+        
+        return jsonify({'movies': movies})
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to get movies: {str(e)}'}), 500
+
+# ==================== END MOVIE MATCH API ENDPOINTS ====================
+
 @app.route("/", methods=["GET"])
 def home():
     selected_library = request.args.get("library") or LIBRARY_NAME
@@ -371,6 +848,14 @@ def home():
     libraries = get_plex_libraries(token)
     error, movie = get_random_movie(selected_library, token)
     return render_template("index.html", error=error, movie=movie, libraries=libraries, selected_library=selected_library, has_env_token=bool(PLEX_TOKEN), plex_token=PLEX_TOKEN if PLEX_TOKEN else "")
+
+@app.route("/match")
+def movie_match():
+    """Serve the movie matching interface"""
+    return render_template("match.html", 
+                         has_env_token=bool(PLEX_TOKEN), 
+                         plex_token=PLEX_TOKEN if PLEX_TOKEN else "",
+                         backend_api_url=BACKEND_API_URL)
 
 @app.route("/poster/<path:item_key>")
 def proxy_poster(item_key):
@@ -394,12 +879,39 @@ def proxy_poster(item_key):
     
     plex_url = f"{PLEX_URL}/{item_key}?X-Plex-Token={token}"
     try:
-        resp = requests.get(plex_url, timeout=5)
+        # Use session for connection pooling and faster requests
+        session = requests.Session()
+        resp = session.get(plex_url, timeout=3, stream=True)  # Reduced timeout, use streaming
         resp.raise_for_status()
-        return send_file(BytesIO(resp.content), mimetype=resp.headers.get("Content-Type", "image/jpeg"))
-    except Exception:
-        # fallback image
-        return requests.get("https://via.placeholder.com/250x375?text=No+Image").content, 200, {'Content-Type': 'image/jpeg'}
+        
+        # Create response with caching headers for better performance
+        from flask import Response
+        def generate():
+            for chunk in resp.iter_content(chunk_size=8192):
+                yield chunk
+        
+        response = Response(generate(), mimetype=resp.headers.get("Content-Type", "image/jpeg"))
+        
+        # Add aggressive caching headers
+        response.headers['Cache-Control'] = 'public, max-age=86400'  # Cache for 24 hours
+        response.headers['ETag'] = f'"{hash(item_key)}"'  # Simple ETag
+        
+        # Check if client has cached version
+        if request.headers.get('If-None-Match') == response.headers['ETag']:
+            return '', 304  # Not Modified
+        
+        return response
+        
+    except Exception as e:
+        print(f"Poster proxy error: {e}")
+        # Return a fast fallback response with caching
+        from flask import Response
+        fallback_response = Response(
+            b'', 
+            status=302,
+            headers={'Location': 'https://via.placeholder.com/250x375/333/e5a00d?text=No+Poster'}
+        )
+        return fallback_response
 
 
 if __name__ == "__main__":

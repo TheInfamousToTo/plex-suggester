@@ -157,6 +157,20 @@
       align-items: center;
     }
 
+    .action-buttons-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 1.5em 0;
+    }
+
+    .match-room-container {
+      display: flex;
+      align-items: center;
+    }
+
     .suggest-btn {
       background: linear-gradient(135deg, #4a4a4a 0%, #6a6a6a 100%);
       color: #e5a00d;
@@ -168,6 +182,28 @@
       border-color: rgba(229, 160, 13, 0.5);
       transform: translateY(-3px);
       box-shadow: 0 8px 25px rgba(229, 160, 13, 0.2);
+    }
+
+    .match-btn {
+      background: linear-gradient(135deg, #e5a00d 0%, #ffb347 100%);
+      color: #1a1a1a;
+      border: 1px solid rgba(229, 160, 13, 0.8);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .match-btn:hover {
+      background: linear-gradient(135deg, #ffb347 0%, #e5a00d 100%);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(229, 160, 13, 0.4);
+      color: #000;
     }
 
     .poster {
@@ -1014,16 +1050,28 @@
       </div>
       {% endif %}
 
-      <div class="suggest-another-container">
-        <form method="get" action="/" style="display:inline;">
-          <input type="hidden" name="library" value="{{ selected_library }}">
-          <button class="btn suggest-btn" type="submit">
+      <div class="action-buttons-container">
+        <div class="suggest-another-container">
+          <form method="get" action="/" style="display:inline;">
+            <input type="hidden" name="library" value="{{ selected_library }}">
+            <button class="btn suggest-btn" type="submit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+              </svg>
+              Suggest Another
+            </button>
+          </form>
+        </div>
+        
+        <div class="match-room-container">
+          <a href="/match" class="btn match-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              <path d="M14.83 16.17c-1.2 1.2-3.13 1.2-4.33 0s-1.2-3.13 0-4.33l4.33-4.33c.59-.59 1.54-.59 2.12 0s.59 1.54 0 2.12L12.71 14c-.39.39-1.02.39-1.41 0s-.39-1.02 0-1.41"/>
             </svg>
-            Suggest Another
-          </button>
-        </form>
+            Match Room
+          </a>
+        </div>
       </div>
     </div>
 

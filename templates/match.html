@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Match - Plex Suggester</title>
+  <!-- Add modern fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      color: #fff;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d1810 50%, #1a1a1a 100%);
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      min-height: 100vh;
+      font-weight: 400;
+      overflow-x: hidden;
+    }
+
+    .overlay {
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.85) 0%, rgba(45, 24, 16, 0.7) 50%, rgba(26, 26, 26, 0.9) 100%);
+      backdrop-filter: blur(8px);
+      min-height: 100vh;
+      width: 100%;
+      max-width: 100vw;
+      padding: 1rem;
+      text-align: center;
+      position: relative;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      color: #e5a00d;
+      font-size: clamp(2rem, 5vw, 3rem);
+      margin-bottom: 0.5em;
+      text-shadow: 0 2px 12px rgba(229, 160, 13, 0.3);
+      background: linear-gradient(135deg, #e5a00d 0%, #ffb347 50%, #e5a00d 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-buttons {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+
+    .nav-btn {
+      background: rgba(229, 160, 13, 0.1);
+      border: 1px solid rgba(229, 160, 13, 0.3);
+      color: #e5a00d;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: clamp(0.8rem, 2vw, 1rem);
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      white-space: nowrap;
+    }
+
+    .nav-btn:hover {
+      background: rgba(229, 160, 13, 0.2);
+      border-color: rgba(229, 160, 13, 0.5);
+      transform: translateY(-2px);
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(45, 24, 16, 0.95) 50%, rgba(40, 40, 40, 0.95) 100%);
+      margin: 2% auto;
+      padding: 1.5rem;
+      border: 2px solid rgba(229, 160, 13, 0.4);
+      border-radius: 1.25rem;
+      width: 95%;
+      max-width: 500px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(229, 160, 13, 0.1);
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #e5a00d;
+    }
+
+    .form-group {
+      margin-bottom: 1.5em;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5em;
+      color: #e5a00d;
+      font-weight: 500;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.8em;
+      border: 1px solid rgba(229, 160, 13, 0.3);
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      font-size: 1em;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: rgba(229, 160, 13, 0.6);
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #e5a00d 0%, #ffb347 50%, #cc8f00 100%);
+      color: #000;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.75rem;
+      font-size: clamp(0.9rem, 2.5vw, 1rem);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 0.25rem;
+      box-shadow: 0 4px 15px rgba(229, 160, 13, 0.2);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      min-height: 44px; /* Touch target size */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(229, 160, 13, 0.4);
+      background: linear-gradient(135deg, #ffb347 0%, #e5a00d 50%, #cc8f00 100%);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, rgba(229, 160, 13, 0.1) 0%, rgba(255, 179, 71, 0.15) 50%, rgba(229, 160, 13, 0.1) 100%);
+      color: #e5a00d;
+      border: 2px solid rgba(229, 160, 13, 0.4);
+      box-shadow: 0 4px 15px rgba(229, 160, 13, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, rgba(229, 160, 13, 0.2) 0%, rgba(255, 179, 71, 0.25) 50%, rgba(229, 160, 13, 0.2) 100%);
+      border-color: rgba(229, 160, 13, 0.6);
+      color: #ffb347;
+    }
+
+    /* Movie card styles */
+    .movie-card {
+      max-width: min(600px, 90vw);
+      margin: 1rem auto;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(45, 24, 16, 0.2) 50%, rgba(0, 0, 0, 0.4) 100%);
+      border: 2px solid rgba(229, 160, 13, 0.3);
+      border-radius: 1.25rem;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      transform-origin: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(229, 160, 13, 0.1);
+    }
+
+    .movie-poster {
+      width: 100%;
+      max-height: min(400px, 50vh);
+      object-fit: cover;
+      transition: opacity 0.3s ease;
+      background: linear-gradient(135deg, #333 0%, #444 50%, #333 100%);
+    }
+
+    .poster-container {
+      position: relative;
+      background: linear-gradient(135deg, #333 0%, #444 50%, #333 100%);
+      min-height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .poster-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #e5a00d;
+      font-size: 1.1rem;
+      z-index: 1;
+    }
+
+    .movie-info {
+      padding: 1rem;
+    }
+
+    .movie-title {
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      font-weight: 700;
+      margin-bottom: 0.5em;
+      color: #e5a00d;
+      line-height: 1.2;
+    }
+
+    .movie-year {
+      color: #ccc;
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      margin-bottom: 1em;
+    }
+
+    .movie-summary {
+      color: #ddd;
+      line-height: 1.6;
+      margin-bottom: 1.5em;
+      max-height: min(150px, 20vh);
+      overflow-y: auto;
+      font-size: clamp(0.8rem, 2.5vw, 1rem);
+    }
+
+    .swipe-buttons {
+      display: flex;
+      justify-content: center;
+      gap: clamp(1rem, 5vw, 2rem);
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .swipe-btn {
+      width: clamp(60px, 15vw, 80px);
+      height: clamp(60px, 15vw, 80px);
+      border-radius: 50%;
+      border: none;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 44px; /* Touch target size */
+      min-height: 44px;
+    }
+
+    .swipe-btn.pass {
+      background: linear-gradient(135deg, #ff4458 0%, #cc1f3c 100%);
+      box-shadow: 0 4px 15px rgba(255, 68, 88, 0.3);
+      color: white;
+    }
+
+    .swipe-btn.like {
+      background: linear-gradient(135deg, #42e695 0%, #3dd68c 100%);
+      box-shadow: 0 4px 15px rgba(66, 230, 149, 0.3);
+      color: white;
+    }
+
+    .swipe-btn.super {
+      background: linear-gradient(135deg, #e5a00d 0%, #ffb347 50%, #cc8f00 100%);
+      box-shadow: 0 4px 15px rgba(229, 160, 13, 0.4);
+      color: #1a1a1a;
+      border: 2px solid rgba(229, 160, 13, 0.5);
+    }
+
+    .swipe-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .swipe-btn:active {
+      transform: scale(0.95);
+    }
+
+    .swipe-btn svg {
+      transition: all 0.2s ease;
+    }
+
+    .swipe-btn:hover svg {
+      transform: scale(1.1);
+    }
+
+    .swipe-btn.pass:hover {
+      box-shadow: 0 8px 25px rgba(255, 68, 88, 0.5);
+    }
+
+    .swipe-btn.like:hover {
+      box-shadow: 0 8px 25px rgba(66, 230, 149, 0.5);
+    }
+
+    .swipe-btn.super:hover {
+      box-shadow: 0 8px 25px rgba(229, 160, 13, 0.6);
+    }
+
+    /* Room info styles */
+    .room-info {
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(45, 24, 16, 0.3) 50%, rgba(0, 0, 0, 0.4) 100%);
+      border: 2px solid rgba(229, 160, 13, 0.3);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(229, 160, 13, 0.1);
+    }
+
+    .participants {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5em;
+      margin-top: 1em;
+    }
+
+    .participant {
+      background: rgba(229, 160, 13, 0.1);
+      color: #e5a00d;
+      padding: 0.5em 1em;
+      border-radius: 20px;
+      font-size: 0.9em;
+      border: 1px solid rgba(229, 160, 13, 0.3);
+    }
+
+    .matches-section {
+      margin-top: 3em;
+    }
+
+    .match-item {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(42, 232, 149, 0.3);
+      border-radius: 12px;
+      padding: 1em;
+      margin-bottom: 1em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .match-title {
+      color: #42e695;
+      font-weight: 600;
+    }
+
+    .match-likes {
+      color: #e5a00d;
+      font-size: 0.9em;
+    }
+
+    .loading {
+      text-align: center;
+      color: #e5a00d;
+      font-size: 1.2em;
+      margin: 2em 0;
+    }
+
+    .error {
+      background: rgba(255, 68, 88, 0.1);
+      border: 1px solid rgba(255, 68, 88, 0.3);
+      color: #ff4458;
+      padding: 1em;
+      border-radius: 8px;
+      margin: 1em 0;
+    }
+
+    .success {
+      background: rgba(42, 232, 149, 0.1);
+      border: 1px solid rgba(42, 232, 149, 0.3);
+      color: #42e695;
+      padding: 1em;
+      border-radius: 8px;
+      margin: 1em 0;
+    }
+
+    /* Active rooms styles */
+    .active-rooms-section {
+      margin-top: 2rem;
+    }
+
+    .rooms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .room-card {
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(45, 24, 16, 0.2) 50%, rgba(0, 0, 0, 0.4) 100%);
+      border: 2px solid rgba(229, 160, 13, 0.2);
+      border-radius: 1rem;
+      padding: 1rem;
+      backdrop-filter: blur(15px);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), 0 0 15px rgba(229, 160, 13, 0.05);
+    }
+
+    .room-card:hover {
+      border-color: rgba(229, 160, 13, 0.6);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), 0 0 25px rgba(229, 160, 13, 0.15);
+    }
+
+    .room-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1em;
+    }
+
+    .room-card-title {
+      color: #e5a00d;
+      font-size: clamp(1.1rem, 3vw, 1.3rem);
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .room-card-id {
+      background: rgba(229, 160, 13, 0.1);
+      color: #e5a00d;
+      padding: 0.3rem 0.6rem;
+      border-radius: 0.375rem;
+      font-size: clamp(0.7rem, 2vw, 0.8rem);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .room-card-details {
+      margin-bottom: 1em;
+    }
+
+    .room-detail {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5em;
+      color: #ddd;
+      font-size: 0.9em;
+    }
+
+    .room-detail-label {
+      color: #ccc;
+    }
+
+    .room-detail-value {
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .room-participants {
+      color: #42e695;
+      font-weight: 500;
+    }
+
+    .room-card-actions {
+      display: flex;
+      gap: 0.5em;
+      margin-top: 1em;
+    }
+
+    .room-join-btn {
+      flex: 1;
+      background: linear-gradient(135deg, #e5a00d 0%, #cc8f00 100%);
+      color: #000;
+      border: none;
+      padding: 0.6rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      min-height: 44px; /* Touch target size */
+    }
+
+    .room-join-btn:hover {
+      background: linear-gradient(135deg, #cc8f00 0%, #e5a00d 100%);
+      transform: translateY(-1px);
+    }
+
+    .empty-rooms {
+      text-align: center;
+      color: #ccc;
+      padding: 3em;
+      font-size: 1.1em;
+    }
+
+    .empty-rooms-icon {
+      font-size: 3em;
+      margin-bottom: 0.5em;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+      .overlay {
+        padding: 0.5rem;
+      }
+
+      .nav-buttons {
+        position: relative;
+        top: 0;
+        left: 0;
+        margin-bottom: 1rem;
+        justify-content: center;
+      }
+
+      .nav-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .movie-card {
+        margin: 0.5rem;
+      }
+      
+      .movie-info {
+        padding: 1rem;
+      }
+
+      .movie-title {
+        font-size: 1.3rem;
+      }
+
+      .movie-summary {
+        max-height: 120px;
+        font-size: 0.9rem;
+      }
+      
+      .swipe-buttons {
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+      
+      .swipe-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+      }
+
+      .modal-content {
+        margin: 1rem auto;
+        padding: 1rem;
+        width: 95%;
+      }
+
+      .form-group input, .form-group select {
+        font-size: 16px; /* Prevent zoom on iOS */
+      }
+
+      .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        margin: 0.25rem 0;
+        width: 100%;
+        max-width: 200px;
+      }
+
+      .rooms-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .room-card {
+        padding: 1rem;
+      }
+
+      .room-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .room-detail {
+        font-size: 0.85rem;
+      }
+
+      .participants {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .participant {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .overlay {
+        padding: 0.25rem;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .movie-card {
+        margin: 0.25rem;
+      }
+
+      .movie-poster {
+        max-height: 300px;
+      }
+
+      .swipe-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+      }
+
+      .btn {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.8rem;
+      }
+
+      .room-card {
+        padding: 0.75rem;
+      }
+
+      .room-card-title {
+        font-size: 1.1rem;
+      }
+
+      .room-card-id {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+      }
+    }
+
+    /* Landscape phone orientation */
+    @media (max-height: 500px) and (orientation: landscape) {
+      .overlay {
+        padding: 0.5rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .movie-poster {
+        max-height: 200px;
+      }
+
+      .movie-info {
+        padding: 0.75rem;
+      }
+
+      .movie-summary {
+        max-height: 80px;
+      }
+
+      .swipe-buttons {
+        margin: 0.5rem 0;
+      }
+
+      .room-info {
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
+    }
+
+    /* Large screens */
+    @media (min-width: 1200px) {
+      .overlay {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .rooms-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+      }
+
+      .movie-card {
+        max-width: 700px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="nav-buttons">
+      <a href="/" class="nav-btn">← Back to Suggester</a>
+    </div>
+
+    <h1>🎬 Movie Match</h1>
+    <p style="color: #ccc; margin-bottom: 2em;">Swipe together, watch together!</p>
+
+    <!-- Main content area -->
+    <div id="app">
+      <!-- Welcome screen -->
+      <div id="welcome-screen">
+        <div class="room-info">
+          <h2 style="color: #e5a00d; margin-top: 0; font-size: clamp(1.2rem, 4vw, 1.5rem);">Get Started</h2>
+          <p style="color: #ddd; font-size: clamp(0.9rem, 2.5vw, 1rem);">Create a room or join an existing one to start matching movies with friends and family!</p>
+          <div style="margin-top: 1.5rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
+            <button class="btn" onclick="showCreateRoomModal()">Create Room</button>
+            <button class="btn btn-secondary" onclick="showJoinRoomModal()">Join Room</button>
+          </div>
+        </div>
+
+        <!-- Active Rooms List -->
+        <div class="active-rooms-section">
+          <h3 style="color: #e5a00d; margin-bottom: 1em; font-size: clamp(1.1rem, 3.5vw, 1.3rem);">🎭 Active Match Rooms</h3>
+          <div id="active-rooms-container" class="rooms-grid">
+            <div class="loading">Loading active rooms...</div>
+          </div>
+          <div style="margin-top: 1em; text-align: center;">
+            <button class="btn btn-secondary" onclick="loadActiveRooms()">Refresh Rooms</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Room screen -->
+      <div id="room-screen" style="display: none;">
+        <div class="room-info">
+          <h2 id="room-name" style="color: #e5a00d; margin-top: 0; font-size: clamp(1.2rem, 4vw, 1.5rem);"></h2>
+          <p style="font-size: clamp(0.9rem, 2.5vw, 1rem);"><strong>Room ID:</strong> <span id="room-id"></span></p>
+          <p style="font-size: clamp(0.9rem, 2.5vw, 1rem);"><strong>Library:</strong> <span id="room-library"></span></p>
+          <div class="participants">
+            <strong style="color: #e5a00d; font-size: clamp(0.9rem, 2.5vw, 1rem);">Participants:</strong>
+            <div id="participants-list"></div>
+          </div>
+        </div>
+
+        <!-- Movie swiping area -->
+        <div id="swipe-area">
+          <div id="loading" class="loading" style="display: none;">
+            Loading next movie...
+          </div>
+          
+          <div id="no-more-movies" style="display: none;">
+            <div class="success">
+              🎉 You've swiped through all available movies! Check the matches below.
+            </div>
+          </div>
+
+          <div id="movie-card-container"></div>
+        </div>
+
+        <!-- Control buttons -->
+        <div style="margin: 1.5rem 0; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;">
+          <button class="btn btn-secondary" onclick="refreshMatches()">Refresh Matches</button>
+          <button class="btn btn-secondary" onclick="leaveRoom()">Leave Room</button>
+        </div>
+
+        <!-- Matches section -->
+        <div class="matches-section">
+          <h2 style="color: #42e695; font-size: clamp(1.1rem, 3.5vw, 1.3rem);">🎯 Matches</h2>
+          <div id="matches-container">
+            <p style="color: #ccc; font-size: clamp(0.9rem, 2.5vw, 1rem);">No matches yet. Keep swiping!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error messages -->
+    <div id="error-message" class="error" style="display: none;"></div>
+  </div>
+
+  <!-- Create Room Modal -->
+  <div id="createRoomModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('createRoomModal')">&times;</span>
+      <h2 style="color: #e5a00d; font-size: clamp(1.2rem, 4vw, 1.5rem);">Create Movie Room</h2>
+      <form id="createRoomForm">
+        <div class="form-group">
+          <label for="roomName">Room Name</label>
+          <input type="text" id="roomName" name="roomName" value="Movie Night" required>
+        </div>
+        <div class="form-group">
+          <label for="library">Library</label>
+          <select id="library" name="library">
+            <option value="Movies">Movies</option>
+            <option value="TV Shows">TV Shows</option>
+            <option value="Anime">Anime</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="minParticipants">Minimum Participants for Match</label>
+          <select id="minParticipants" name="minParticipants">
+            <option value="2">2 people</option>
+            <option value="3">3 people</option>
+            <option value="4">4 people</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="creatorUsername">Your Name</label>
+          <input type="text" id="creatorUsername" name="creatorUsername" placeholder="Enter your name" required>
+        </div>
+        <div style="text-align: center; margin-top: 1.5rem;">
+          <button type="submit" class="btn">Create Room</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Join Room Modal -->
+  <div id="joinRoomModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('joinRoomModal')">&times;</span>
+      <h2 style="color: #e5a00d; font-size: clamp(1.2rem, 4vw, 1.5rem);">Join Movie Room</h2>
+      <form id="joinRoomForm">
+        <div class="form-group">
+          <label for="joinRoomId">Room ID</label>
+          <input type="text" id="joinRoomId" name="joinRoomId" placeholder="Enter room ID" required>
+        </div>
+        <div class="form-group">
+          <label for="joinerUsername">Your Name</label>
+          <input type="text" id="joinerUsername" name="joinerUsername" placeholder="Enter your name" required>
+        </div>
+        <div style="text-align: center; margin-top: 1.5rem;">
+          <button type="submit" class="btn">Join Room</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let currentRoom = null;
+    let currentUser = null;
+    let jwtToken = null;
+    let currentMovie = null;
+    let movieQueue = []; // Queue for preloaded movies
+    let isLoadingMovies = false; // Flag to prevent multiple simultaneous loads
+    let roomCache = {}; // Cache room info to avoid repeated requests
+    let swipedMoviesCache = new Set(); // Cache swiped movies locally
+    let posterCache = new Map(); // Cache for poster URLs to avoid re-downloading
+
+    // Backend configuration
+    const BACKEND_API_URL = "{{ backend_api_url }}";
+
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Movie Match initialized with backend:', BACKEND_API_URL);
+      initializeAuth();
+    });
+
+    // Authentication setup
+    function initializeAuth() {
+      // Check if we have a Plex token from the main app
+      const hasEnvToken = {{ has_env_token | tojson }};
+      const plexToken = "{{ plex_token | safe }}";
+      
+      if (hasEnvToken && plexToken) {
+        // Use environment token directly
+        authenticateWithPlex(plexToken);
+      } else {
+        // Need to get token from user
+        const storedToken = localStorage.getItem('plexToken');
+        if (storedToken) {
+          authenticateWithPlex(storedToken);
+        } else {
+          promptForPlexToken();
+        }
+      }
+    }
+
+    function promptForPlexToken() {
+      const token = prompt('Please enter your Plex token to use Movie Match:');
+      if (token) {
+        authenticateWithPlex(token);
+      } else {
+        showError('Plex token is required to use Movie Match');
+      }
+    }
+
+    function authenticateWithPlex(plexToken) {
+      fetch('/auth/plex', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ plex_token: plexToken })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.token) {
+          jwtToken = data.token;
+          localStorage.setItem('plexToken', plexToken);
+          console.log('Authentication successful');
+          // Load active rooms after authentication
+          loadActiveRooms();
+        } else {
+          throw new Error(data.error || 'Authentication failed');
+        }
+      })
+      .catch(error => {
+        showError('Authentication failed: ' + error.message);
+        promptForPlexToken();
+      });
+    }
+
+    // Modal functions
+    function showCreateRoomModal() {
+      document.getElementById('createRoomModal').style.display = 'block';
+    }
+
+    function showJoinRoomModal() {
+      document.getElementById('joinRoomModal').style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    // Room creation
+    document.getElementById('createRoomForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const roomData = {
+        name: formData.get('roomName'),
+        library: formData.get('library'),
+        min_participants: parseInt(formData.get('minParticipants')),
+        creator_username: formData.get('creatorUsername')
+      };
+      
+      createRoom(roomData);
+    });
+
+    function createRoom(roomData) {
+      fetch('/api/match/rooms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify(roomData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.room_id) {
+          joinRoomWithId(data.room_id, roomData.creator_username);
+          closeModal('createRoomModal');
+        } else {
+          throw new Error(data.error || 'Failed to create room');
+        }
+      })
+      .catch(error => {
+        showError('Failed to create room: ' + error.message);
+      });
+    }
+
+    // Room joining
+    document.getElementById('joinRoomForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      joinRoomWithId(formData.get('joinRoomId'), formData.get('joinerUsername'));
+    });
+
+    function joinRoomWithId(roomId, username) {
+      fetch(`/api/match/rooms/${roomId}/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify({
+          username: username
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.user_id || data.message) {
+          currentUser = {
+            username: username
+          };
+          loadRoom(roomId);
+          closeModal('joinRoomModal');
+        } else {
+          throw new Error(data.error || 'Failed to join room');
+        }
+      })
+      .catch(error => {
+        showError('Failed to join room: ' + error.message);
+      });
+    }
+
+    // Room management
+    function loadRoom(roomId) {
+      fetch(`/api/match/rooms/${roomId}`, {
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.id || data.name) {
+          currentRoom = data;
+          displayRoom();
+          loadNextMovie();
+          loadMatches();
+        } else {
+          throw new Error(data.error || 'Failed to load room');
+        }
+      })
+      .catch(error => {
+        showError('Failed to load room: ' + error.message);
+      });
+    }
+
+    function displayRoom() {
+      document.getElementById('welcome-screen').style.display = 'none';
+      document.getElementById('room-screen').style.display = 'block';
+      
+      document.getElementById('room-name').textContent = currentRoom.name;
+      document.getElementById('room-id').textContent = currentRoom.id;
+      document.getElementById('room-library').textContent = currentRoom.library_filter;
+      
+      const participantsList = document.getElementById('participants-list');
+      participantsList.innerHTML = '';
+      if (currentRoom.users && currentRoom.users.length > 0) {
+        currentRoom.users.forEach(user => {
+          const span = document.createElement('span');
+          span.className = 'participant';
+          span.textContent = user.username;
+          participantsList.appendChild(span);
+        });
+      }
+    }
+
+    // Movie swiping with optimized loading
+    function loadNextMovie() {
+      // If we have movies in queue, use the next one immediately
+      if (movieQueue.length > 0) {
+        currentMovie = movieQueue.shift();
+        displayMovie(currentMovie);
+        
+        // Preload more movies if queue is getting low (but don't block UI)
+        if (movieQueue.length <= 1 && !isLoadingMovies) {
+          setTimeout(preloadMovies, 100); // Async preload
+        }
+        return;
+      }
+
+      // Show loading only when no movies in queue
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('movie-card-container').innerHTML = '';
+      document.getElementById('no-more-movies').style.display = 'none';
+      
+      // Load single movie quickly
+      fetchSingleMovie()
+        .then(movie => {
+          document.getElementById('loading').style.display = 'none';
+          if (movie) {
+            currentMovie = movie;
+            displayMovie(movie);
+            
+            // Start background preloading
+            if (!isLoadingMovies) {
+              setTimeout(preloadMovies, 200);
+            }
+          } else {
+            // No more movies
+            document.getElementById('no-more-movies').style.display = 'block';
+          }
+        })
+        .catch(error => {
+          document.getElementById('loading').style.display = 'none';
+          showError('Failed to load movie: ' + error.message);
+        });
+    }
+
+    // Fast single movie fetch
+    function fetchSingleMovie() {
+      return fetch(`/api/match/rooms/${currentRoom.id}/next-movie`, {
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`
+        }
+      })
+      .then(response => {
+        if (response.status === 204) {
+          return null; // No more movies
+        }
+        if (!response.ok) {
+          throw new Error('Failed to fetch movie');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data && data.movie) {
+          return data.movie;
+        }
+        return null;
+      });
+    }
+
+    // Optimized preload function
+    function preloadMovies() {
+      if (isLoadingMovies || !currentRoom || movieQueue.length >= 5) return;
+      
+      isLoadingMovies = true;
+      console.log('Background preloading movies...');
+      
+      // Use batch endpoint for faster loading
+      fetch(`/api/match/rooms/${currentRoom.id}/movies/3`, {
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Batch loading failed');
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data.movies && Array.isArray(data.movies)) {
+          movieQueue.push(...data.movies);
+          console.log(`✅ Preloaded ${data.movies.length} movies. Queue: ${movieQueue.length}`);
+          
+          // Start preloading posters immediately
+          setTimeout(preloadQueuedPosters, 100);
+        }
+      })
+      .catch(error => {
+        console.warn('Batch preload failed, trying individual loading:', error);
+        // Fallback to individual loading
+        preloadMoviesIndividually();
+      })
+      .finally(() => {
+        isLoadingMovies = false;
+      });
+    }
+
+    // Fallback individual loading (simplified)
+    function preloadMoviesIndividually() {
+      const promises = [];
+      for (let i = 0; i < 2; i++) {
+        promises.push(fetchSingleMovie());
+      }
+      
+      Promise.allSettled(promises)
+        .then(results => {
+          const movies = results
+            .filter(result => result.status === 'fulfilled' && result.value)
+            .map(result => result.value);
+          
+          if (movies.length > 0) {
+            movieQueue.push(...movies);
+            console.log(`✅ Individually loaded ${movies.length} movies. Queue: ${movieQueue.length}`);
+            
+            // Start preloading posters for newly loaded movies
+            setTimeout(preloadQueuedPosters, 100);
+          }
+        });
+    }
+
+    function displayMovie(movie) {
+      const container = document.getElementById('movie-card-container');
+      const posterUrl = movie.poster_url || 'https://via.placeholder.com/300x450/333/e5a00d?text=No+Poster';
+      
+      container.innerHTML = `
+        <div class="movie-card" id="current-movie-card">
+          <div class="poster-container">
+            <img src="${posterUrl}" alt="${movie.title}" class="movie-poster" 
+                 loading="eager"
+                 crossorigin="anonymous"
+                 onerror="this.src='https://via.placeholder.com/300x450/333/e5a00d?text=No+Poster'; this.style.opacity='1';"
+                 onload="this.style.opacity='1'; this.nextElementSibling.style.display='none';"
+                 style="opacity: 0; transition: opacity 0.2s ease;">
+            <div class="poster-loading" style="display: block;">
+              📽️ Loading poster...
+            </div>
+          </div>
+          <div class="movie-info">
+            <div class="movie-title">${movie.title}</div>
+            <div class="movie-year">${movie.year || 'Unknown Year'}</div>
+            <div class="movie-summary">${movie.summary || 'No summary available.'}</div>
+          </div>
+        </div>
+        <div class="swipe-buttons">
+          <button class="swipe-btn pass" onclick="swipeMovie('left')" title="Not Interested">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+          <button class="swipe-btn like" onclick="swipeMovie('right')" title="Add to Watchlist">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </button>
+          <button class="swipe-btn super" onclick="swipeMovie('super')" title="Must Watch!">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+          </button>
+        </div>
+      `;
+      
+      // Check if poster is already cached by attempting immediate load
+      const posterImg = container.querySelector('.movie-poster');
+      if (posterImg.complete && posterImg.naturalHeight !== 0) {
+        // Image is already cached
+        posterImg.style.opacity = '1';
+        container.querySelector('.poster-loading').style.display = 'none';
+      }
+      
+      // Preload posters for movies in queue
+      preloadQueuedPosters();
+    }
+
+    // Preload poster images for better perceived performance
+    function preloadQueuedPosters() {
+      if (movieQueue.length === 0) return;
+      
+      // Preload next 2-3 posters
+      const postersToPreload = movieQueue.slice(0, 3);
+      
+      postersToPreload.forEach((movie, index) => {
+        if (movie.poster_url && 
+            movie.poster_url !== 'https://via.placeholder.com/300x450/333/e5a00d?text=No+Poster' &&
+            !posterCache.has(movie.poster_url)) {
+          
+          // Create hidden image element to preload
+          const img = new Image();
+          img.onload = () => {
+            posterCache.set(movie.poster_url, true); // Mark as cached
+            console.log(`✅ Preloaded poster ${index + 1}/${postersToPreload.length}`);
+          };
+          img.onerror = () => {
+            console.warn(`⚠️ Failed to preload poster ${index + 1}`);
+          };
+          
+          // Start preloading with staggered timing
+          setTimeout(() => {
+            img.src = movie.poster_url;
+          }, index * 50); // Reduced stagger time for faster loading
+        }
+      });
+    }
+
+    function swipeMovie(direction) {
+      if (!currentMovie) return;
+      
+      // Cache the swiped movie locally
+      swipedMoviesCache.add(currentMovie.id);
+      
+      const swipeData = {
+        movie_id: currentMovie.id,
+        movie_title: currentMovie.title,
+        movie_year: currentMovie.year,
+        direction: direction
+      };
+      
+      // Start animation immediately for better UX
+      const card = document.getElementById('current-movie-card');
+      if (card) {
+        card.style.transform = direction === 'left' ? 'translateX(-100vw) rotate(-30deg)' : 'translateX(100vw) rotate(30deg)';
+        card.style.opacity = '0';
+        
+        // Load next movie immediately (don't wait for API response)
+        setTimeout(() => {
+          loadNextMovie();
+        }, 150);
+      } else {
+        // If no card to animate, load next movie immediately
+        loadNextMovie();
+      }
+      
+      // Send swipe to backend asynchronously (don't block UI)
+      fetch(`/api/match/rooms/${currentRoom.id}/swipe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify(swipeData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.message || data.success) {
+          console.log('✅ Swipe recorded');
+          if (direction === 'right' || direction === 'super') {
+            // Update matches in background
+            setTimeout(loadMatches, 500);
+          }
+        } else {
+          console.warn('⚠️ Swipe recording failed:', data.error);
+          // Remove from local cache if failed
+          swipedMoviesCache.delete(currentMovie.id);
+        }
+      })
+      .catch(error => {
+        console.error('❌ Swipe error:', error);
+        // Remove from local cache if failed
+        swipedMoviesCache.delete(currentMovie.id);
+      });
+    }
+
+    // Matches
+    function loadMatches() {
+      fetch(`/api/match/rooms/${currentRoom.id}/matches`, {
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        displayMatches(data.matches || []);
+      })
+      .catch(error => {
+        console.error('Failed to load matches:', error);
+      });
+    }
+
+    function displayMatches(matches) {
+      const container = document.getElementById('matches-container');
+      
+      if (matches.length === 0) {
+        container.innerHTML = '<p style="color: #ccc;">No matches yet. Keep swiping!</p>';
+        return;
+      }
+      
+      container.innerHTML = matches.map(match => `
+        <div class="match-item">
+          <div>
+            <div class="match-title">${match.movie_title} (${match.movie_year || 'N/A'})</div>
+            <div class="match-likes">Liked by: ${match.liked_by || 'Unknown'}</div>
+          </div>
+          <div class="match-likes">${match.like_count || 0} ❤️</div>
+        </div>
+      `).join('');
+    }
+
+    function refreshMatches() {
+      loadMatches();
+    }
+
+    function leaveRoom() {
+      if (confirm('Are you sure you want to leave this room?')) {
+        currentRoom = null;
+        currentUser = null;
+        currentMovie = null;
+        movieQueue = []; // Clear the movie queue
+        isLoadingMovies = false;
+        
+        document.getElementById('room-screen').style.display = 'none';
+        document.getElementById('welcome-screen').style.display = 'block';
+      }
+    }
+
+    // Utility functions
+    function showError(message) {
+      const errorDiv = document.getElementById('error-message');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+      
+      setTimeout(() => {
+        errorDiv.style.display = 'none';
+      }, 5000);
+    }
+
+    // Active Rooms Management
+    function loadActiveRooms() {
+      if (!jwtToken) {
+        console.log('No JWT token, skipping room load');
+        return;
+      }
+
+      const container = document.getElementById('active-rooms-container');
+      container.innerHTML = '<div class="loading">Loading active rooms...</div>';
+
+      fetch('/api/match/rooms', {
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        displayActiveRooms(data.rooms || []);
+      })
+      .catch(error => {
+        console.error('Failed to load active rooms:', error);
+        container.innerHTML = '<div class="error">Failed to load rooms</div>';
+      });
+    }
+
+    function displayActiveRooms(rooms) {
+      const container = document.getElementById('active-rooms-container');
+      
+      if (rooms.length === 0) {
+        container.innerHTML = `
+          <div class="empty-rooms">
+            <div class="empty-rooms-icon">🎬</div>
+            <p>No active rooms found</p>
+            <p style="font-size: 0.9em; opacity: 0.7;">Create a new room to get started!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = rooms.map(room => {
+        const createdDate = new Date(room.created_at).toLocaleDateString();
+        const expiresDate = new Date(room.expires_at).toLocaleDateString();
+        
+        return `
+          <div class="room-card" onclick="promptJoinRoom('${room.id}', '${room.name}')">
+            <div class="room-card-header">
+              <h4 class="room-card-title">${room.name}</h4>
+              <span class="room-card-id">${room.id}</span>
+            </div>
+            <div class="room-card-details">
+              <div class="room-detail">
+                <span class="room-detail-label">Library:</span>
+                <span class="room-detail-value">${room.library_filter}</span>
+              </div>
+              <div class="room-detail">
+                <span class="room-detail-label">Min. Participants:</span>
+                <span class="room-detail-value">${room.min_participants}</span>
+              </div>
+              <div class="room-detail">
+                <span class="room-detail-label">Participants:</span>
+                <span class="room-detail-value room-participants">${room.participant_count}</span>
+              </div>
+              <div class="room-detail">
+                <span class="room-detail-label">Created:</span>
+                <span class="room-detail-value">${createdDate}</span>
+              </div>
+            </div>
+            <div class="room-card-actions">
+              <button class="room-join-btn" onclick="event.stopPropagation(); promptJoinRoom('${room.id}', '${room.name}')">
+                Join Room
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function promptJoinRoom(roomId, roomName) {
+      const username = prompt(`Enter your name to join "${roomName}":`);
+      if (username && username.trim()) {
+        joinRoomWithId(roomId, username.trim());
+      }
+    }
+
+    // Close modals when clicking outside
+    window.onclick = function(event) {
+      const modals = document.querySelectorAll('.modal');
+      modals.forEach(modal => {
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+    }
+
+    // Optional: Register service worker for better caching (only in production)
+    if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+      navigator.serviceWorker.register('/sw.js').catch(() => {
+        // Service worker registration failed, but that's ok
+      });
+    }
+  </script>
+</body>
+</html>
