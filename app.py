@@ -3,12 +3,18 @@ import random
 import re
 import requests
 import urllib.parse
-from flask import Flask, render_template, request, send_file
+import jwt
+import datetime
+from functools import wraps
+from flask import Flask, render_template, request, send_file, jsonify
 from plexapi.server import PlexServer
 import wikipediaapi
 from io import BytesIO
 
 app = Flask(__name__)
+
+# JWT Secret Key - should be set via environment variable in production
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
 
 # Plex config from environment
 PLEX_URL = os.getenv("PLEX_URL")
@@ -19,6 +25,64 @@ wiki_wiki = wikipediaapi.Wikipedia(
     user_agent='PlexMovieSuggester/1.0 (example@mail.com)',  # Replace with your contact info
     language='en'
 )
+
+def verify_plex_token(plex_token, plex_url=None):
+    """Verify if the provided Plex token is valid"""
+    try:
+        url = plex_url or PLEX_URL
+        if not url:
+            return False
+        plex = PlexServer(url, plex_token)
+        # Try to access server info to verify token
+        plex.machineIdentifier
+        return True
+    except Exception:
+        return False
+
+def generate_jwt_token(plex_token):
+    """Generate JWT token for authenticated user"""
+    payload = {
+        'plex_token': plex_token,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30),
+        'iat': datetime.datetime.utcnow()
+    }
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm='HS256')
+
+def verify_jwt_token(token):
+    """Verify and decode JWT token"""
+    try:
+        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'])
+        return payload
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+def token_required(f):
+    """Decorator to require JWT authentication"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get('Authorization')
+        
+        if auth_header:
+            try:
+                token = auth_header.split(" ")[1]  # Bearer <token>
+            except IndexError:
+                return jsonify({'message': 'Token format is invalid'}), 401
+        
+        if not token:
+            return jsonify({'message': 'Token is missing'}), 401
+        
+        payload = verify_jwt_token(token)
+        if payload is None:
+            return jsonify({'message': 'Token is invalid or expired'}), 401
+        
+        # Add plex_token to request context
+        request.plex_token = payload['plex_token']
+        return f(*args, **kwargs)
+    
+    return decorated
 
 def get_wikipedia_actor_image(actor_name):
     try:
@@ -81,11 +145,13 @@ def get_anilist_actor_image(actor_name):
     except Exception:
         return None
 
-def get_plex_libraries():
-    if not PLEX_URL or not PLEX_TOKEN:
+def get_plex_libraries(plex_token=None):
+    # Use provided token or fallback to environment variable
+    token = plex_token or PLEX_TOKEN
+    if not PLEX_URL or not token:
         return []
     try:
-        plex = PlexServer(PLEX_URL, PLEX_TOKEN)
+        plex = PlexServer(PLEX_URL, token)
         # Include all video types (movie, show, etc.)
         return [
             {"title": section.title, "type": section.type}
@@ -95,12 +161,14 @@ def get_plex_libraries():
     except Exception:
         return []
 
-def get_random_movie(library_name=None):
-    if not PLEX_URL or not PLEX_TOKEN:
+def get_random_movie(library_name=None, plex_token=None):
+    # Use provided token or fallback to environment variable
+    token = plex_token or PLEX_TOKEN
+    if not PLEX_URL or not token:
         return "⚠️ Please set PLEX_URL and PLEX_TOKEN environment variables.", None
 
     try:
-        plex = PlexServer(PLEX_URL, PLEX_TOKEN)
+        plex = PlexServer(PLEX_URL, token)
         server_id = plex.machineIdentifier
         lib_name = library_name or LIBRARY_NAME
         section = plex.library.section(lib_name)
@@ -131,7 +199,7 @@ def get_random_movie(library_name=None):
         for actor in getattr(item, "roles", [])[:5]:
             # 1. Try Plex thumb
             if getattr(actor, "thumb", None):
-                actor_thumb = f"{PLEX_URL}{actor.thumb}?X-Plex-Token={PLEX_TOKEN}"
+                actor_thumb = f"{PLEX_URL}{actor.thumb}?X-Plex-Token={token}"
             else:
                 # 2. Try IMDB (via DuckDuckGo image search)
                 actor_thumb = get_imdb_actor_image(actor.tag)
@@ -233,17 +301,98 @@ def get_external_trailer_url(title, year=None):
     return None
 
 
+@app.route("/auth/plex", methods=["POST"])
+def plex_auth():
+    """Authenticate with Plex token and return JWT"""
+    try:
+        data = request.get_json()
+        if not data or 'plex_token' not in data:
+            return jsonify({'error': 'Plex token is required'}), 400
+        
+        plex_token = data['plex_token']
+        
+        # Verify the Plex token
+        if not verify_plex_token(plex_token):
+            return jsonify({'error': 'Invalid Plex token'}), 401
+        
+        # Generate JWT token
+        jwt_token = generate_jwt_token(plex_token)
+        
+        return jsonify({
+            'token': jwt_token,
+            'message': 'Authentication successful'
+        })
+    
+    except Exception as e:
+        return jsonify({'error': f'Authentication failed: {str(e)}'}), 500
+
+@app.route("/api/libraries", methods=["GET"])
+@token_required
+def api_libraries():
+    """Get Plex libraries for authenticated user"""
+    try:
+        libraries = get_plex_libraries(request.plex_token)
+        return jsonify({'libraries': libraries})
+    except Exception as e:
+        return jsonify({'error': f'Failed to fetch libraries: {str(e)}'}), 500
+
+@app.route("/api/suggest", methods=["GET"])
+@token_required
+def api_suggest():
+    """Get random movie suggestion for authenticated user"""
+    try:
+        library_name = request.args.get("library")
+        error, movie = get_random_movie(library_name, request.plex_token)
+        
+        if error:
+            return jsonify({'error': error}), 400
+        
+        # Convert movie object to dictionary for JSON response
+        movie_data = {
+            'title': getattr(movie, 'title', ''),
+            'year': getattr(movie, 'year', ''),
+            'summary': getattr(movie, 'summary', ''),
+            'poster_url': getattr(movie, 'poster_url', ''),
+            'watch_url': getattr(movie, 'watch_url', ''),
+            'trailer_url': getattr(movie, 'trailer_url', ''),
+            'external_trailer_url': getattr(movie, 'external_trailer_url', ''),
+            'cast': getattr(movie, 'cast', [])
+        }
+        
+        return jsonify({'movie': movie_data})
+    except Exception as e:
+        return jsonify({'error': f'Failed to get suggestion: {str(e)}'}), 500
+
 @app.route("/", methods=["GET"])
 def home():
     selected_library = request.args.get("library") or LIBRARY_NAME
-    libraries = get_plex_libraries()
-    error, movie = get_random_movie(selected_library)
-    return render_template("index.html", error=error, movie=movie, libraries=libraries, selected_library=selected_library)
+    # Use environment token if available for backward compatibility
+    token = PLEX_TOKEN
+    libraries = get_plex_libraries(token)
+    error, movie = get_random_movie(selected_library, token)
+    return render_template("index.html", error=error, movie=movie, libraries=libraries, selected_library=selected_library, has_env_token=bool(PLEX_TOKEN), plex_token=PLEX_TOKEN if PLEX_TOKEN else "")
 
 @app.route("/poster/<path:item_key>")
 def proxy_poster(item_key):
     # item_key will be like 'library/metadata/12345/thumb'
-    plex_url = f"{PLEX_URL}/{item_key}?X-Plex-Token={PLEX_TOKEN}"
+    # Use environment token if available, otherwise require authentication
+    if PLEX_TOKEN:
+        token = PLEX_TOKEN
+    else:
+        # Require authentication if no environment token
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return "Unauthorized", 401
+        try:
+            jwt_token = auth_header.split(" ")[1]
+            payload = verify_jwt_token(jwt_token)
+            if payload is None:
+                return "Unauthorized", 401
+            token = payload['plex_token']
+        except (IndexError, KeyError):
+            return "Unauthorized", 401
+    
+    plex_url = f"{PLEX_URL}/{item_key}?X-Plex-Token={token}"
     try:
         resp = requests.get(plex_url, timeout=5)
         resp.raise_for_status()

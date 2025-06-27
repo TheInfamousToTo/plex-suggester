@@ -2,10 +2,29 @@
 
 # Plex Movie Suggester
 
-**Version 1.4.1**
+**Version 1.5.0**
 
 A modern Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
-Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, and comprehensive user engagement tracking.
+Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, and **secure JWT-based authentication**.
+
+---
+
+## 🚀 What's New in v1.5.0
+
+- **Hybrid Authentication System:**  
+  Supports both environment variable configuration (backward compatible) and web-based Plex token authentication.
+- **Seamless Integration:**  
+  Automatically handles JWT authentication with external like/dislike/watch backend services.
+- **Settings Management:**  
+  Built-in settings modal allows users to securely manage their Plex tokens when not using environment variables.
+- **Enhanced UI/UX:**  
+  Settings button moved next to dropdown as icon-only for cleaner interface; improved blur overlay coverage.
+- **Bearer Token API:**  
+  API requests use Bearer token authentication when required for enhanced security.
+- **Improved Security:**  
+  Plex tokens are validated server-side and JWT tokens are issued for secure API access to external services.
+- **Backward Compatibility:**  
+  Fully compatible with existing Docker deployments using environment variables.
 
 ---
 
@@ -68,6 +87,10 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 
 ## Features
 
+- **Hybrid Authentication System** - supports both environment variables and web-based Plex token configuration
+- **Automatic JWT Integration** - seamlessly handles authentication with external backend services
+- **Built-in Settings Management** - configure Plex tokens directly in the web interface (when not using environment variables)
+- **Enhanced UI/UX** - icon-only settings button positioned next to dropdown, improved blur overlay coverage
 - Suggests a random unwatched movie, show, anime, or other video from your Plex library
 - **Modern glass morphism UI** with enhanced visual effects and animations
 - **Posters are always visible** (even when hosted behind a tunnel), thanks to backend proxying
@@ -84,12 +107,16 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 - **Fully responsive design** optimized for mobile, tablet, and desktop
 - **Like/Dislike buttons** with real-time counts and modern icons
 - **Professional typography** using Inter and Poppins fonts
+- **Bearer token API security** for authenticated requests to external services
 
 ## Environment Variables
 
-- `PLEX_URL`: Your Plex server URL (e.g. `http://192.168.1.100:32400`)
-- `PLEX_TOKEN`: Your Plex authentication token
+- `PLEX_URL`: Your Plex server URL (e.g. `http://192.168.1.100:32400`) - **Required**
+- `PLEX_TOKEN`: Your Plex authentication token - **Optional** (can be set via web interface)
 - `PLEX_LIBRARY`: Default Plex library to suggest from (default: "Movies")
+- `JWT_SECRET_KEY`: Secret key for JWT token signing (default provided, change in production)
+
+**Note:** When `PLEX_TOKEN` is provided as an environment variable, the app will use it directly and skip the web-based authentication prompt. The app will still obtain JWT tokens for external API integrations (like like/dislike/watch functionality) as needed.
 
 ## Usage
 
@@ -99,9 +126,11 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 docker run -d -p 5000:5000 \
   -e PLEX_URL="http://your-plex-server:32400" \
   -e PLEX_TOKEN="your-plex-token" \
-  -e PLEX_LIBRARY="Movies" \
+  -e JWT_SECRET_KEY="your-secure-secret-key" \
   theinfamoustoto/plex-suggester:latest
 ```
+
+**Note:** When `PLEX_TOKEN` is provided, the app will use it directly and users won't be prompted for authentication. The app will still handle JWT authentication for external service integrations automatically.
 
 ### Running with Docker Compose
 
@@ -117,8 +146,9 @@ services:
       - "5000:5000"
     environment:
       PLEX_URL: "http://your-plex-server:32400"
-      PLEX_TOKEN: "your-plex-token"
+      PLEX_TOKEN: "your-plex-token"  # Recommended for Docker deployments
       PLEX_LIBRARY: "Movies"
+      JWT_SECRET_KEY: "change-this-secret-key-in-production"
     restart: unless-stopped
 ```
 
@@ -127,6 +157,28 @@ Then start the service:
 ```bash
 docker compose up -d
 ```
+
+**Important:** Make sure to change the `JWT_SECRET_KEY` to a secure random value in production.
+
+## Getting Your Plex Token
+
+When you first access the application, you'll be prompted to enter your Plex token. Here's how to find it:
+
+1. **Quick Method (via Plex Web):**
+   - Open Plex in your web browser
+   - Navigate to any movie or show
+   - Click the "..." menu and select "Get Info"
+   - Click "View XML" at the bottom
+   - Look for `X-Plex-Token` in the URL
+
+2. **Alternative Methods:**
+   - Visit the [official Plex support guide](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/)
+   - Use browser developer tools to inspect network requests to your Plex server
+
+3. **Settings Management:**
+   - Once entered, your token is stored securely in your browser
+   - Use the Settings button in the app to update or clear your token
+   - Tokens are validated against your Plex server before being accepted
 
 ### Running Locally
 
@@ -147,7 +199,9 @@ docker compose up -d
 
     ```bash
     export PLEX_URL="http://your-plex-server:32400"
-    export PLEX_TOKEN="your-plex-token"
+    export JWT_SECRET_KEY="your-secure-secret-key"
+    # PLEX_TOKEN is optional - you can set it via the web interface
+    # export PLEX_TOKEN="your-plex-token"
     export PLEX_LIBRARY="Movies"
     ```
 
@@ -209,6 +263,10 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 - Double-check your Plex token and library name.
 - If posters are not visible, ensure the backend can reach your Plex server.
 - Check logs for errors if the app fails to connect or display items.
+- **For like/dislike/watch functionality:** If these features return 401 errors, ensure that:
+  - The external backend service (`https://plex-like.satrawi.cc` in the example) is running and accessible
+  - Your Plex token is valid and can authenticate with the external backend
+  - The JWT tokens are being obtained correctly (check browser console for authentication messages)
 
 ## License
 

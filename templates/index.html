@@ -6,6 +6,14 @@
   <!-- Add modern fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    /* CSS Reset */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow-x: hidden;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -20,15 +28,24 @@
       background-position: center;
       background-attachment: fixed;
       min-height: 100vh;
+      height: 100vh;
       font-weight: 400;
+      overflow-x: hidden;
     }
 
     .overlay {
       background: linear-gradient(135deg, rgba(0, 0, 0, 0.85) 0%, rgba(26, 26, 26, 0.9) 100%);
       backdrop-filter: blur(8px);
       min-height: 100vh;
+      height: 100vh;
+      width: 100vw;
       padding: 1.5em;
       text-align: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      box-sizing: border-box;
+      overflow-y: auto;
     }
 
     h1 {
@@ -356,6 +373,43 @@
       padding: 0 1em;
     }
 
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      margin-left: auto;
+      z-index: 2;
+      position: relative;
+      pointer-events: auto;
+    }
+
+    .settings-btn.icon-only {
+      padding: 0.8em;
+      min-width: auto;
+      width: auto;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(229, 160, 13, 0.2);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .settings-btn.icon-only:hover {
+      background: rgba(0, 0, 0, 0.5);
+      border-color: rgba(229, 160, 13, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(229, 160, 13, 0.15);
+    }
+
+    .settings-btn.icon-only svg {
+      fill: #e5a00d;
+      transition: fill 0.3s ease;
+    }
+
+    .settings-btn.icon-only:hover svg {
+      fill: #ffbe3c;
+    }
+
     .github-link {
       position: absolute;
       top: 0;
@@ -407,13 +461,6 @@
       right: 0;
       pointer-events: none;
       z-index: 1;
-    }
-
-    .header-bar form {
-      margin-left: auto;
-      z-index: 2;
-      position: relative;
-      pointer-events: auto;
     }
 
     .header-bar select {
@@ -486,6 +533,117 @@
       border: 1px solid rgba(229, 160, 13, 0.2);
     }
 
+    .btn-danger {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    }
+
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+      margin: 5% auto;
+      padding: 2em;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 600px;
+      border: 1px solid rgba(229, 160, 13, 0.2);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .close:hover {
+      color: #e5a00d;
+    }
+
+    .setting-item {
+      margin-bottom: 2em;
+    }
+
+    .setting-item label {
+      display: block;
+      margin-bottom: 0.5em;
+      color: #e5a00d;
+      font-weight: 500;
+    }
+
+    .setting-item input {
+      width: 100%;
+      padding: 0.8em;
+      border: 1px solid rgba(229, 160, 13, 0.3);
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      color: white;
+      font-size: 1em;
+      margin-bottom: 1em;
+    }
+
+    .setting-item input:focus {
+      outline: none;
+      border-color: #e5a00d;
+      box-shadow: 0 0 10px rgba(229, 160, 13, 0.3);
+    }
+
+    .setting-item ol {
+      color: #ccc;
+      padding-left: 1.5em;
+    }
+
+    .setting-item ol li {
+      margin-bottom: 0.5em;
+    }
+
+    .setting-item a {
+      color: #e5a00d;
+      text-decoration: none;
+    }
+
+    .setting-item a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      background: rgba(220, 53, 69, 0.1);
+      border: 1px solid rgba(220, 53, 69, 0.3);
+      color: #dc3545;
+      padding: 1em;
+      border-radius: 8px;
+      margin: 1em 0;
+      display: none;
+    }
+
+    .success-message {
+      background: rgba(40, 167, 69, 0.1);
+      border: 1px solid rgba(40, 167, 69, 0.3);
+      color: #28a745;
+      padding: 1em;
+      border-radius: 8px;
+      margin: 1em 0;
+      display: none;
+    }
+
     /* Responsive Design */
     @media (max-width: 768px) {
       .overlay {
@@ -508,8 +666,19 @@
         margin-bottom: 1em;
       }
 
-      .header-bar form {
+      .header-controls {
         margin: 0;
+        justify-content: center;
+      }
+
+      .settings-btn.icon-only {
+        padding: 0.7em;
+      }
+
+      .header-bar select {
+        min-width: 180px;
+        padding: 0.7em 1.2em;
+        padding-right: 2.5em;
       }
 
       .github-link {
@@ -622,6 +791,10 @@
         font-size: 1.5em;
       }
 
+      .settings-btn.icon-only {
+        padding: 0.6em;
+      }
+
       .header-bar select {
         min-width: 160px;
         padding: 0.6em 1em;
@@ -661,9 +834,106 @@
         opacity: 0.6;
       }
     }
+
+    /* Modal styles */
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #1e1e1e;
+      margin: 15% auto;
+      padding: 2em;
+      border: 1px solid rgba(229, 160, 13, 0.3);
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+
+    .close {
+      color: #e5a00d;
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5em;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .close:hover {
+      color: #ffbe3c;
+    }
+
+    .setting-item {
+      margin-bottom: 1.5em;
+      color: #e8e8e8;
+      font-size: 1em;
+      line-height: 1.6;
+    }
+
+    .setting-item label {
+      display: block;
+      margin-bottom: 0.5em;
+      font-weight: 500;
+    }
+
+    .setting-item input {
+      padding: 0.8em 1.2em;
+      border-radius: 8px;
+      border: 1px solid rgba(229, 160, 13, 0.25);
+      font-size: 1em;
+      background: rgba(26, 26, 26, 0.95);
+      color: #e5a00d;
+      font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 500;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+      width: calc(100% - 2.4em);
+      margin-right: auto;
+    }
+
+    .setting-item input::placeholder {
+      color: rgba(229, 160, 13, 0.5);
+    }
+
+    .setting-item button {
+      margin-top: 0.5em;
+      padding: 0.7em 1.2em;
+      border-radius: 8px;
+      border: none;
+      font-size: 1em;
+      font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .setting-item button.btn-danger {
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      color: white;
+    }
+
+    .setting-item button.btn-danger:hover {
+      background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    }
+
+    /* End of modal styles */
   </style>
 </head>
-<body style="background-image: url('{{ movie.poster_url }}');">
+<body style="background-image: url('{{ movie.poster_url }}');" data-has-env-token="{{ has_env_token|lower }}" data-plex-token="{{ plex_token }}">>
   <div class="overlay">
     <div class="header-bar">
       <a href="https://github.com/TheInfamousToTo/plex-suggester" target="_blank" class="github-link" title="View on GitHub">
@@ -672,18 +942,50 @@
         </svg>
       </a>
       <h1>Plex Movie Suggester</h1>
-      <form method="get" action="/">
-        <select name="library" onchange="this.form.submit()">
-          {% for lib in libraries %}
-            <option value="{{ lib.title }}" {% if lib.title == selected_library %}selected{% endif %}>
-              {{ lib.title }} ({{ lib.type|capitalize }})
-            </option>
-          {% endfor %}
-        </select>
-      </form>
+      <div class="header-controls">
+        <form method="get" action="/">
+          <select name="library" onchange="this.form.submit()">
+            {% for lib in libraries %}
+              <option value="{{ lib.title }}" {% if lib.title == selected_library %}selected{% endif %}>
+                {{ lib.title }} ({{ lib.type|capitalize }})
+              </option>
+            {% endfor %}
+          </select>
+        </form>
+        <button class="btn settings-btn icon-only" onclick="showSettings()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12A3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5a3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97c0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1c0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66Z"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div class="top-buttons">
+      <!-- Settings Modal -->
+      <div id="settingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+          <span class="close" onclick="hideSettings()">&times;</span>
+          <h2>Settings</h2>
+          <div class="setting-item">
+            <label for="plexTokenInput">Plex Token:</label>
+            <input type="password" id="plexTokenInput" placeholder="Enter your Plex token">
+            <button onclick="updatePlexToken()" class="btn">Update Token</button>
+            <button onclick="clearPlexToken()" class="btn btn-danger">Clear Token</button>
+          </div>
+          <div class="setting-item">
+            <p><strong>How to get your Plex Token:</strong></p>
+            <ol>
+              <li>Open Plex in your browser</li>
+              <li>Go to any item and click the "..." menu</li>
+              <li>Select "Get Info"</li>
+              <li>Click "View XML" at the bottom</li>
+              <li>Look for "X-Plex-Token" in the URL</li>
+            </ol>
+            <p>Or visit: <a href="https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/" target="_blank">Plex Support Guide</a></p>
+          </div>
+        </div>
+      </div>
+
       {% if movie.watch_url %}
       <div class="watch-plex-container">
         <div class="watch-count-display">
@@ -838,36 +1140,371 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsrsasign@10.8.7/lib/jsrsasign-all-min.js"></script>
   <script>
-  // Generate a UUID (RFC4122 version 4)
-  function generateUUID() {
-    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    );
-  }
-
-  // Get or create user ID
-  function getUserId() {
-    let userId = localStorage.getItem('plex_suggester_user_id');
-    if (!userId) {
-      userId = generateUUID();
-      localStorage.setItem('plex_suggester_user_id', userId);
+  // Global variables
+  let JWT_TOKEN = localStorage.getItem('separate_backend_jwt_token');
+  
+  // Get Plex token from localStorage or prompt user
+  function getPlexToken() {
+    let plexToken = localStorage.getItem('plex_token');
+    if (!plexToken) {
+      plexToken = prompt('Please enter your Plex token:');
+      if (plexToken) {
+        localStorage.setItem('plex_token', plexToken);
+      }
     }
-    return userId;
-  }
-  const USER_ID = getUserId();
-
-  async function fetchJWT(userId) {
-    const res = await fetch(`https://plex-like.satrawi.cc/get-jwt?user_id=${encodeURIComponent(userId)}`);
-    const data = await res.json();
-    return data.token;
+    return plexToken;
   }
 
-  let JWT_TOKEN = null;
+  // Authenticate with the separate like/dislike/watch backend
+  async function authenticateWithSeparateBackend(plexToken) {
+    try {
+      const response = await fetch(`${API_BASE}/auth/plex`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ plex_token: plexToken })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        JWT_TOKEN = data.token;
+        localStorage.setItem('separate_backend_jwt_token', JWT_TOKEN);
+        return true;
+      } else {
+        console.error('Authentication with separate backend failed:', data.error);
+        return false;
+      }
+    } catch (error) {
+      console.error('Authentication error with separate backend:', error);
+      return false;
+    }
+  }
 
-  fetchJWT(USER_ID).then(token => {
-    JWT_TOKEN = token;
-    // Now you can use JWT_TOKEN in your API calls
+  // Authenticate with Plex token and get JWT
+  async function authenticateWithPlex(plexToken) {
+    try {
+      const response = await fetch('/auth/plex', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ plex_token: plexToken })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        JWT_TOKEN = data.token;
+        localStorage.setItem('jwt_token', JWT_TOKEN);
+        return true;
+      } else {
+        console.error('Authentication failed:', data.error);
+        // Clear invalid token
+        localStorage.removeItem('plex_token');
+        localStorage.removeItem('jwt_token');
+        return false;
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      return false;
+    }
+  }
+
+  // Make authenticated API request
+  async function makeAuthenticatedRequest(url, options = {}) {
+    if (!JWT_TOKEN) {
+      throw new Error('No authentication token available');
+    }
+    
+    const headers = {
+      'Authorization': `Bearer ${JWT_TOKEN}`,
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+    
+    return fetch(url, {
+      ...options,
+      headers
+    });
+  }
+
+  // Initialize authentication
+  async function initializeAuth() {
+    // Try to use stored JWT token first
+    JWT_TOKEN = localStorage.getItem('jwt_token');
+    
+    if (!JWT_TOKEN) {
+      const plexToken = getPlexToken();
+      if (plexToken) {
+        const success = await authenticateWithPlex(plexToken);
+        if (!success) {
+          alert('Failed to authenticate with Plex. Please check your token.');
+          return false;
+        }
+      } else {
+        alert('Plex token is required to use this application.');
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  // Load libraries using new API
+  async function loadLibraries() {
+    try {
+      const response = await makeAuthenticatedRequest('/api/libraries');
+      if (response.ok) {
+        const data = await response.json();
+        updateLibrarySelector(data.libraries);
+      } else if (response.status === 401) {
+        // Token expired, re-authenticate
+        localStorage.removeItem('jwt_token');
+        JWT_TOKEN = null;
+        await initializeAuth();
+        // Retry
+        await loadLibraries();
+      }
+    } catch (error) {
+      console.error('Failed to load libraries:', error);
+    }
+  }
+
+  // Update library selector dropdown
+  function updateLibrarySelector(libraries) {
+    const selector = document.querySelector('select[name="library"]');
+    if (selector) {
+      selector.innerHTML = '';
+      libraries.forEach(lib => {
+        const option = document.createElement('option');
+        option.value = lib.title;
+        option.textContent = `${lib.title} (${lib.type})`;
+        selector.appendChild(option);
+      });
+    }
+  }
+
+  // Get new movie suggestion
+  async function getNewSuggestion(library = '') {
+    try {
+      const url = library ? `/api/suggest?library=${encodeURIComponent(library)}` : '/api/suggest';
+      const response = await makeAuthenticatedRequest(url);
+      
+      if (response.ok) {
+        const data = await response.json();
+        updateMovieDisplay(data.movie);
+      } else if (response.status === 401) {
+        // Token expired, re-authenticate
+        localStorage.removeItem('jwt_token');
+        JWT_TOKEN = null;
+        await initializeAuth();
+        // Retry
+        await getNewSuggestion(library);
+      } else {
+        const errorData = await response.json();
+        showError(errorData.error || 'Failed to get suggestion');
+      }
+    } catch (error) {
+      console.error('Failed to get suggestion:', error);
+      showError('Failed to get suggestion');
+    }
+  }
+
+  // Update movie display with new data
+  function updateMovieDisplay(movie) {
+    // Update title
+    const titleElement = document.querySelector('.movie-title');
+    if (titleElement) titleElement.textContent = movie.title;
+    
+    // Update year
+    const yearElement = document.querySelector('.movie-year');
+    if (yearElement) yearElement.textContent = movie.year ? `(${movie.year})` : '';
+    
+    // Update summary
+    const summaryElement = document.querySelector('.movie-summary');
+    if (summaryElement) summaryElement.textContent = movie.summary;
+    
+    // Update poster
+    const posterElement = document.querySelector('.movie-poster');
+    if (posterElement) posterElement.src = movie.poster_url;
+    
+    // Update watch link
+    const watchElement = document.querySelector('.watch-link');
+    if (watchElement) watchElement.href = movie.watch_url;
+    
+    // Update trailer links
+    const trailerElement = document.querySelector('.trailer-link');
+    if (trailerElement) {
+      trailerElement.href = movie.external_trailer_url || movie.trailer_url || '#';
+    }
+    
+    // Update cast
+    updateCastDisplay(movie.cast);
+  }
+
+  // Update cast display
+  function updateCastDisplay(cast) {
+    const castContainer = document.querySelector('.cast-container');
+    if (castContainer && cast) {
+      castContainer.innerHTML = '';
+      cast.forEach(actor => {
+        const actorDiv = document.createElement('div');
+        actorDiv.className = 'cast-member';
+        actorDiv.innerHTML = `
+          <img src="${actor.thumb}" alt="${actor.name}" class="actor-thumb">
+          <span class="actor-name">${actor.name}</span>
+        `;
+        castContainer.appendChild(actorDiv);
+      });
+    }
+  }
+
+  // Show error message
+  function showError(message) {
+    const errorElement = document.querySelector('.error-message');
+    if (errorElement) {
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+    } else {
+      alert(message);
+    }
+  }
+
+  // Show success message
+  function showSuccess(message) {
+    const successElement = document.querySelector('.success-message');
+    if (successElement) {
+      successElement.textContent = message;
+      successElement.style.display = 'block';
+      setTimeout(() => {
+        successElement.style.display = 'none';
+      }, 3000);
+    }
+  }
+
+  // Settings modal functions
+  function showSettings() {
+    const modal = document.getElementById('settingsModal');
+    const currentToken = localStorage.getItem('plex_token');
+    const tokenInput = document.getElementById('plexTokenInput');
+    
+    if (currentToken) {
+      tokenInput.value = currentToken;
+    }
+    
+    modal.style.display = 'block';
+  }
+
+  function hideSettings() {
+    const modal = document.getElementById('settingsModal');
+    modal.style.display = 'none';
+  }
+
+  async function updatePlexToken() {
+    const tokenInput = document.getElementById('plexTokenInput');
+    const newToken = tokenInput.value.trim();
+    
+    if (!newToken) {
+      alert('Please enter a valid Plex token');
+      return;
+    }
+    
+    // Clear old tokens
+    localStorage.removeItem('jwt_token');
+    localStorage.setItem('plex_token', newToken);
+    JWT_TOKEN = null;
+    
+    // Try to authenticate with new token
+    const success = await authenticateWithPlex(newToken);
+    if (success) {
+      showSuccess('Plex token updated successfully!');
+      hideSettings();
+      // Reload libraries with new token
+      await loadLibraries();
+    } else {
+      alert('Invalid Plex token. Please check your token and try again.');
+      localStorage.removeItem('plex_token');
+    }
+  }
+
+  function clearPlexToken() {
+    if (confirm('Are you sure you want to clear your Plex token? You will need to re-enter it to continue using the app.')) {
+      localStorage.removeItem('plex_token');
+      localStorage.removeItem('jwt_token');
+      JWT_TOKEN = null;
+      hideSettings();
+      showSuccess('Plex token cleared. Please refresh the page to re-authenticate.');
+    }
+  }
+
+  // Close modal when clicking outside of it
+  window.onclick = function(event) {
+    const modal = document.getElementById('settingsModal');
+    if (event.target === modal) {
+      hideSettings();
+    }
+  }
+
+  // Initialize the application
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Check if environment token is available (passed from backend)
+    const hasEnvToken = document.body.getAttribute('data-has-env-token') === 'true';
+    
+    if (hasEnvToken) {
+      // Even with environment token, we need JWT for like/dislike/watch API
+      console.log('Using environment Plex token');
+      
+      // Get Plex token from environment
+      const envPlexToken = document.body.getAttribute('data-plex-token');
+      if (envPlexToken) {
+        // First try to use stored JWT token
+        JWT_TOKEN = localStorage.getItem('separate_backend_jwt_token');
+        
+        if (!JWT_TOKEN) {
+          // Authenticate with separate backend to get JWT token for like/dislike/watch API
+          const success = await authenticateWithSeparateBackend(envPlexToken);
+          if (success) {
+            console.log('JWT token obtained for like/dislike/watch API calls');
+          } else {
+            console.warn('Failed to get JWT token for like/dislike/watch functionality');
+          }
+        }
+      }
+      
+      // Set up event listeners for traditional form-based navigation
+      setupTraditionalNavigation();
+    } else {
+      // Use new JWT authentication system for this app
+      const success = await initializeAuth();
+      if (success) {
+        // Also try to authenticate with separate backend if we have a plex token
+        const plexToken = localStorage.getItem('plex_token');
+        if (plexToken) {
+          await authenticateWithSeparateBackend(plexToken);
+        }
+        
+        await loadLibraries();
+        // Add event listeners for buttons
+        const suggestButton = document.querySelector('.suggest-button');
+        if (suggestButton) {
+          suggestButton.addEventListener('click', () => {
+            const selector = document.querySelector('select[name="library"]');
+            const selectedLibrary = selector ? selector.value : '';
+            getNewSuggestion(selectedLibrary);
+          });
+        }
+      }
+    }
   });
+
+  // Setup traditional form-based navigation for environment token mode
+  function setupTraditionalNavigation() {
+    // The existing form-based system works fine when environment token is available
+    // No additional JavaScript needed for basic functionality
+    console.log('Traditional navigation mode active');
+  }
   </script>
 </body>
 </html>

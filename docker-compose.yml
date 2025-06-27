@@ -7,6 +7,8 @@ services:
       - "5000:5000"
     environment:
       PLEX_URL: "http://your-plex-server:32400"
-      PLEX_TOKEN: "your-plex-token"
+      # PLEX_TOKEN is now optional - users can set it via the web interface
+      # PLEX_TOKEN: "your-plex-token"  
       PLEX_LIBRARY: "Movies"
+      JWT_SECRET_KEY: "change-this-secret-key-in-production"
     restart: unless-stopped
