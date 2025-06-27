@@ -70,6 +70,32 @@ def get_backend_jwt_token(plex_token):
         print(f"Failed to get backend JWT token: {e}")
         return None
 
+def require_jwt_auth(f):
+    """Decorator to require JWT authentication for API endpoints"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Get Authorization header
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'error': 'Authorization header with Bearer token required'}), 401
+        
+        try:
+            # Extract token
+            token = auth_header.split(' ')[1]
+            
+            # Verify token (basic verification - the backend will do the real verification)
+            # We mainly use this to ensure the frontend is sending a proper token format
+            if not token or len(token) < 10:
+                raise ValueError("Invalid token format")
+            
+            # Pass through to the actual function
+            return f(*args, **kwargs)
+            
+        except Exception as e:
+            return jsonify({'error': 'Invalid or expired token'}), 401
+    
+    return decorated_function
+
 def make_backend_request(method, endpoint, headers=None, json_data=None, params=None):
     """Make authenticated request to backend API"""
     url = f"{BACKEND_API_URL}{endpoint}"
@@ -839,6 +865,150 @@ def get_multiple_movies_for_match(room_id, count):
         return jsonify({'error': f'Failed to get movies: {str(e)}'}), 500
 
 # ==================== END MOVIE MATCH API ENDPOINTS ====================
+
+# ==================== WATCHLIST & WATCH TRACKING API ENDPOINTS ====================
+
+@app.route("/api/watchlist/add", methods=["POST"])
+@require_jwt_auth
+def add_to_watchlist():
+    """Add a movie to user's watchlist via backend API"""
+    try:
+        data = request.get_json()
+        movie_id = data.get('movie_id')
+        movie_title = data.get('movie_title')
+        
+        if not movie_id or not movie_title:
+            return jsonify({'error': 'movie_id and movie_title are required'}), 400
+        
+        # Get JWT token from request headers
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'error': 'Authorization header required'}), 401
+        
+        jwt_token = auth_header.split(' ')[1]
+        
+        # Forward to backend API
+        response = requests.post(
+            f"{BACKEND_API_URL}/api/watchlist/add",
+            json={
+                'movie_id': movie_id,
+                'movie_title': movie_title
+            },
+            headers={
+                'Authorization': f'Bearer {jwt_token}',
+                'Content-Type': 'application/json'
+            },
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return jsonify({'error': 'Backend API error'}), response.status_code
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to add to watchlist: {str(e)}'}), 500
+
+@app.route("/api/watch/mark", methods=["POST"])
+@require_jwt_auth
+def mark_as_watched():
+    """Mark a movie as watched via backend API"""
+    try:
+        data = request.get_json()
+        movie_id = data.get('movie_id')
+        movie_title = data.get('movie_title')
+        
+        if not movie_id or not movie_title:
+            return jsonify({'error': 'movie_id and movie_title are required'}), 400
+        
+        # Get JWT token from request headers
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'error': 'Authorization header required'}), 401
+        
+        jwt_token = auth_header.split(' ')[1]
+        
+        # Forward to backend API
+        response = requests.post(
+            f"{BACKEND_API_URL}/api/watch/mark",
+            json={
+                'movie_id': movie_id,
+                'movie_title': movie_title
+            },
+            headers={
+                'Authorization': f'Bearer {jwt_token}',
+                'Content-Type': 'application/json'
+            },
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return jsonify({'error': 'Backend API error'}), response.status_code
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to mark as watched: {str(e)}'}), 500
+
+@app.route("/api/watchlist", methods=["GET"])
+@require_jwt_auth
+def get_watchlist():
+    """Get user's watchlist via backend API"""
+    try:
+        # Get JWT token from request headers
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'error': 'Authorization header required'}), 401
+        
+        jwt_token = auth_header.split(' ')[1]
+        
+        # Forward to backend API
+        response = requests.get(
+            f"{BACKEND_API_URL}/api/watchlist",
+            headers={
+                'Authorization': f'Bearer {jwt_token}'
+            },
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return jsonify({'error': 'Backend API error'}), response.status_code
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to get watchlist: {str(e)}'}), 500
+
+@app.route("/api/watch/history", methods=["GET"])
+@require_jwt_auth
+def get_watch_history():
+    """Get user's watch history via backend API"""
+    try:
+        # Get JWT token from request headers
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'error': 'Authorization header required'}), 401
+        
+        jwt_token = auth_header.split(' ')[1]
+        
+        # Forward to backend API
+        response = requests.get(
+            f"{BACKEND_API_URL}/api/watch/history",
+            headers={
+                'Authorization': f'Bearer {jwt_token}'
+            },
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return jsonify({'error': 'Backend API error'}), response.status_code
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to get watch history: {str(e)}'}), 500
+
+# ==================== END WATCHLIST & WATCH TRACKING ====================
 
 @app.route("/", methods=["GET"])
 def home():

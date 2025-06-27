@@ -4,6 +4,44 @@ All notable changes to the Plex Suggester project will be documented in this fil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2025-06-27
+
+### Added
+- **Enhanced Plex Match Actions** - Direct integration with Plex functionality
+  - "Add to Plex Watchlist" button for matched movies
+  - "Mark as Watched" button to track viewing progress
+  - "Open in Plex" button for direct app/web access
+  - Smart button states and visual feedback
+- **Real-time Match Notifications** - Instant alerts for new matches
+  - Popup notifications when new matches are found
+  - Auto-polling every 10 seconds while in match rooms
+  - Dismissible notifications with smooth animations
+  - Optional notification sound for better UX
+- **Enhanced Match Display** - Richer match information
+  - Movie posters in match cards
+  - Movie summaries with intelligent truncation
+  - Improved visual design with better spacing
+  - Action buttons with hover effects and state management
+- **Backend API Extensions** - New endpoints for enhanced functionality
+  - `/api/watchlist/add` - Add movies to user watchlist
+  - `/api/watch/mark` - Mark movies as watched
+  - `/api/watchlist` - Get user's watchlist
+  - `/api/watch/history` - Get user's watch history
+  - Database tables for watchlist and watch tracking
+
+### Changed
+- Updated match cards with modern layout and enhanced information display
+- Improved notification system with better visual feedback
+- Enhanced error handling and user feedback throughout
+- Better state management for match room sessions
+
+### Technical Details
+- Added PostgreSQL tables: `watchlist` and `watch_history`
+- Implemented JWT-authenticated API endpoints for watch tracking
+- Added real-time polling system for match notifications
+- Enhanced frontend state management for notifications
+- Added database migration script for new tables
+
 ## [1.6.0] - 2025-06-27
 
 ### Added

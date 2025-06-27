@@ -366,19 +366,195 @@
       border-radius: 12px;
       padding: 1em;
       margin-bottom: 1em;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2), 0 0 15px rgba(42, 232, 149, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .match-item:hover {
+      border-color: rgba(42, 232, 149, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3), 0 0 25px rgba(42, 232, 149, 0.2);
+    }
+
+    .match-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
+      margin-bottom: 1em;
+      gap: 1rem;
+    }
+
+    .match-info {
+      flex: 1;
+    }
+
+    .match-poster {
+      width: 60px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 2px solid rgba(42, 232, 149, 0.3);
+      background: linear-gradient(135deg, #333 0%, #444 50%, #333 100%);
     }
 
     .match-title {
       color: #42e695;
       font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 0.5em;
     }
 
     .match-likes {
       color: #e5a00d;
       font-size: 0.9em;
+      margin-bottom: 0.5em;
+    }
+
+    .match-summary {
+      color: #ccc;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin-bottom: 1em;
+      max-height: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .match-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+
+    .match-btn {
+      background: linear-gradient(135deg, #e5a00d 0%, #ffb347 50%, #cc8f00 100%);
+      color: #000;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
+
+    .match-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 15px rgba(229, 160, 13, 0.4);
+    }
+
+    .match-btn.secondary {
+      background: linear-gradient(135deg, rgba(229, 160, 13, 0.1) 0%, rgba(255, 179, 71, 0.15) 50%, rgba(229, 160, 13, 0.1) 100%);
+      color: #e5a00d;
+      border: 1px solid rgba(229, 160, 13, 0.4);
+    }
+
+    .match-btn.secondary:hover {
+      background: linear-gradient(135deg, rgba(229, 160, 13, 0.2) 0%, rgba(255, 179, 71, 0.25) 50%, rgba(229, 160, 13, 0.2) 100%);
+      border-color: rgba(229, 160, 13, 0.6);
+    }
+
+    .match-btn.watched {
+      background: linear-gradient(135deg, #42e695 0%, #3dd68c 100%);
+      color: #000;
+    }
+
+    .match-btn.watched:hover {
+      box-shadow: 0 4px 15px rgba(66, 230, 149, 0.4);
+    }
+
+    .match-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .match-btn:disabled:hover {
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Notification System */
+    .notification-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      max-width: 400px;
+      pointer-events: none;
+    }
+
+    .notification {
+      background: linear-gradient(135deg, rgba(42, 232, 149, 0.95) 0%, rgba(66, 230, 149, 0.95) 100%);
+      color: #000;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(42, 232, 149, 0.3);
+      backdrop-filter: blur(20px);
+      border: 2px solid rgba(42, 232, 149, 0.4);
+      transform: translateX(100%);
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
+    .notification.hide {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+
+    .notification-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+
+    .notification-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #000;
+    }
+
+    .notification-close {
+      background: none;
+      border: none;
+      color: #000;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0;
+      margin-left: 1rem;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+
+    .notification-close:hover {
+      opacity: 1;
+    }
+
+    .notification-body {
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: #000;
+    }
+
+    .notification-movie {
+      font-weight: 600;
+      color: #1a1a1a;
     }
 
     .loading {
@@ -798,6 +974,9 @@
 
     <!-- Error messages -->
     <div id="error-message" class="error" style="display: none;"></div>
+
+    <!-- Notification container -->
+    <div id="notification-container" class="notification-container"></div>
   </div>
 
   <!-- Create Room Modal -->
@@ -869,6 +1048,8 @@
     let roomCache = {}; // Cache room info to avoid repeated requests
     let swipedMoviesCache = new Set(); // Cache swiped movies locally
     let posterCache = new Map(); // Cache for poster URLs to avoid re-downloading
+    let previousMatches = new Set(); // Track previous matches for notifications
+    let notificationTimeout = null; // Timeout for match notifications
 
     // Backend configuration
     const BACKEND_API_URL = "{{ backend_api_url }}";
@@ -1319,6 +1500,13 @@
           if (direction === 'right' || direction === 'super') {
             // Update matches in background
             setTimeout(loadMatches, 500);
+            
+            // Set up automatic match checking for notifications
+            if (!notificationTimeout) {
+              notificationTimeout = setInterval(() => {
+                loadMatches();
+              }, 10000); // Check every 10 seconds for new matches
+            }
           }
         } else {
           console.warn('⚠️ Swipe recording failed:', data.error);
@@ -1356,24 +1544,245 @@
         container.innerHTML = '<p style="color: #ccc;">No matches yet. Keep swiping!</p>';
         return;
       }
+
+      // Check for new matches and show notifications
+      checkForNewMatches(matches);
       
-      container.innerHTML = matches.map(match => `
-        <div class="match-item">
-          <div>
-            <div class="match-title">${match.movie_title} (${match.movie_year || 'N/A'})</div>
-            <div class="match-likes">Liked by: ${match.liked_by || 'Unknown'}</div>
+      container.innerHTML = matches.map(match => {
+        const posterUrl = match.poster_url || 'https://via.placeholder.com/60x90/333/e5a00d?text=No+Poster';
+        const summary = match.summary ? (match.summary.length > 150 ? match.summary.substring(0, 150) + '...' : match.summary) : 'No summary available.';
+        
+        return `
+          <div class="match-item" data-movie-id="${match.movie_id || match.id}">
+            <div class="match-header">
+              <div class="match-info">
+                <div class="match-title">${match.movie_title} (${match.movie_year || 'N/A'})</div>
+                <div class="match-likes">Liked by: ${match.liked_by || 'Unknown'}</div>
+                <div class="match-likes">${match.like_count || 0} ❤️</div>
+                <div class="match-summary">${summary}</div>
+                <div class="match-actions">
+                  <button class="match-btn" onclick="addToWatchlist('${match.movie_id || match.id}', '${match.movie_title}')" title="Add to Plex Watchlist">
+                    📚 Add to Watchlist
+                  </button>
+                  <button class="match-btn watched" onclick="markAsWatched('${match.movie_id || match.id}', '${match.movie_title}')" title="Mark as Watched">
+                    ✅ Mark Watched
+                  </button>
+                  <button class="match-btn secondary" onclick="openInPlex('${match.movie_id || match.id}', '${match.movie_title}')" title="Open in Plex">
+                    🎬 Open in Plex
+                  </button>
+                </div>
+              </div>
+              <img src="${posterUrl}" alt="${match.movie_title}" class="match-poster" 
+                   onerror="this.src='https://via.placeholder.com/60x90/333/e5a00d?text=No+Poster';">
+            </div>
           </div>
-          <div class="match-likes">${match.like_count || 0} ❤️</div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function refreshMatches() {
       loadMatches();
     }
 
+    // Notification System
+    function checkForNewMatches(matches) {
+      const currentMatchIds = new Set(matches.map(match => match.movie_id || match.id));
+      
+      // Find new matches
+      const newMatches = matches.filter(match => {
+        const matchId = match.movie_id || match.id;
+        return !previousMatches.has(matchId);
+      });
+      
+      // Show notifications for new matches
+      newMatches.forEach(match => {
+        showMatchNotification(match);
+      });
+      
+      // Update previous matches set
+      previousMatches.clear();
+      currentMatchIds.forEach(id => previousMatches.add(id));
+    }
+
+    function showMatchNotification(match) {
+      const container = document.getElementById('notification-container');
+      const notificationId = `notification-${Date.now()}`;
+      
+      const notification = document.createElement('div');
+      notification.className = 'notification';
+      notification.id = notificationId;
+      notification.innerHTML = `
+        <div class="notification-header">
+          <div class="notification-title">🎉 New Match!</div>
+          <button class="notification-close" onclick="hideNotification('${notificationId}')">&times;</button>
+        </div>
+        <div class="notification-body">
+          <span class="notification-movie">${match.movie_title}</span> was liked by multiple users!
+        </div>
+      `;
+      
+      container.appendChild(notification);
+      
+      // Trigger show animation
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 100);
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        hideNotification(notificationId);
+      }, 5000);
+      
+      // Play notification sound (if available)
+      playNotificationSound();
+    }
+
+    function hideNotification(notificationId) {
+      const notification = document.getElementById(notificationId);
+      if (notification) {
+        notification.classList.add('hide');
+        setTimeout(() => {
+          notification.remove();
+        }, 400);
+      }
+    }
+
+    function playNotificationSound() {
+      // Try to play a subtle notification sound
+      try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEcBDSP2O/PfC8Fol6yqbNSfUhNvWaNvOFdBgI5Gn3bxNe6AAAABAAEQAAkEwYIJERAXw=');
+        audio.volume = 0.3;
+        audio.play().catch(() => {
+          // Ignore audio play errors (user interaction may be required)
+        });
+      } catch (e) {
+        // Ignore audio errors
+      }
+    }
+
+    // Match Action Functions
+    function addToWatchlist(movieId, movieTitle) {
+      const button = event.target;
+      button.disabled = true;
+      button.innerHTML = '⏳ Adding...';
+      
+      fetch(`/api/watchlist/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify({
+          movie_id: movieId,
+          movie_title: movieTitle
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success || data.message) {
+          button.innerHTML = '✅ Added!';
+          button.classList.add('watched');
+          showSuccessMessage(`"${movieTitle}" added to your Plex watchlist!`);
+        } else {
+          throw new Error(data.error || 'Failed to add to watchlist');
+        }
+      })
+      .catch(error => {
+        console.error('Watchlist error:', error);
+        button.disabled = false;
+        button.innerHTML = '📚 Add to Watchlist';
+        showError('Failed to add to watchlist: ' + error.message);
+      });
+    }
+
+    function markAsWatched(movieId, movieTitle) {
+      const button = event.target;
+      button.disabled = true;
+      button.innerHTML = '⏳ Marking...';
+      
+      fetch(`/api/watch/mark`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwtToken}`
+        },
+        body: JSON.stringify({
+          movie_id: movieId,
+          movie_title: movieTitle
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success || data.message) {
+          button.innerHTML = '✅ Watched!';
+          button.disabled = true;
+          showSuccessMessage(`"${movieTitle}" marked as watched!`);
+        } else {
+          throw new Error(data.error || 'Failed to mark as watched');
+        }
+      })
+      .catch(error => {
+        console.error('Mark watched error:', error);
+        button.disabled = false;
+        button.innerHTML = '✅ Mark Watched';
+        showError('Failed to mark as watched: ' + error.message);
+      });
+    }
+
+    function openInPlex(movieId, movieTitle) {
+      // Try to open in Plex app, fallback to web interface
+      const plexAppUrl = `plex://movie/${movieId}`;
+      const plexWebUrl = `https://app.plex.tv/desktop/#!/media/${movieId}`;
+      
+      // Try app first
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = plexAppUrl;
+      document.body.appendChild(iframe);
+      
+      // Fallback to web after 1 second
+      setTimeout(() => {
+        window.open(plexWebUrl, '_blank');
+        document.body.removeChild(iframe);
+      }, 1000);
+      
+      showSuccessMessage(`Opening "${movieTitle}" in Plex...`);
+    }
+
+    function showSuccessMessage(message) {
+      const existingSuccess = document.querySelector('.temp-success');
+      if (existingSuccess) {
+        existingSuccess.remove();
+      }
+      
+      const successDiv = document.createElement('div');
+      successDiv.className = 'success temp-success';
+      successDiv.textContent = message;
+      successDiv.style.position = 'fixed';
+      successDiv.style.top = '20px';
+      successDiv.style.left = '50%';
+      successDiv.style.transform = 'translateX(-50%)';
+      successDiv.style.zIndex = '10001';
+      successDiv.style.maxWidth = '90vw';
+      
+      document.body.appendChild(successDiv);
+      
+      setTimeout(() => {
+        successDiv.remove();
+      }, 3000);
+    }
+
     function leaveRoom() {
       if (confirm('Are you sure you want to leave this room?')) {
+        // Clear notification polling
+        if (notificationTimeout) {
+          clearInterval(notificationTimeout);
+          notificationTimeout = null;
+        }
+        
+        // Clear previous matches for notifications
+        previousMatches.clear();
+        
         currentRoom = null;
         currentUser = null;
         currentMovie = null;

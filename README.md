@@ -2,10 +2,25 @@
 
 # Plex Movie Suggester
 
-**Version 1.6.0**
+**Version 1.7.0**
 
 A modern Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
 Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, **secure JWT-based authentication**, and **Plex Match functionality** for group viewing decisions.
+
+---
+
+## 🚀 What's New in v1.7.0
+
+- **Enhanced Plex Match Actions:**  
+  Direct integration with Plex functionality including "Add to Watchlist", "Mark as Watched", and "Open in Plex" buttons.
+- **Real-time Match Notifications:**  
+  Instant popup notifications when new matches are found with auto-polling and dismissible alerts.
+- **Enriched Match Display:**  
+  Movie posters, summaries, and action buttons in beautifully designed match cards.
+- **Backend API Extensions:**  
+  New watchlist and watch tracking endpoints with PostgreSQL persistence.
+- **Enhanced UX:**  
+  Smart button states, visual feedback, and comprehensive error handling throughout.
 
 ---
 
