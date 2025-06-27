@@ -5,13 +5,13 @@
 **Version 1.6.0**
 
 A modern Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
-Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, **secure JWT-based authentication**, and **Movie Match functionality** for group viewing decisions.
+Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, **secure JWT-based authentication**, and **Plex Match functionality** for group viewing decisions.
 
 ---
 
 ## 🚀 What's New in v1.6.0
 
-- **Movie Match Feature:**  
+- **Plex Match Feature:**  
   Tinder-style movie matching for group viewing decisions with real-time collaboration.
 - **Group Swiping:**  
   Create or join match rooms with friends and family to find movies everyone wants to watch.
@@ -110,7 +110,7 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 - **Automatic JWT Integration** - seamlessly handles authentication with external backend services
 - **Built-in Settings Management** - configure Plex tokens directly in the web interface (when not using environment variables)
 - **Enhanced UI/UX** - icon-only settings button positioned next to dropdown, improved blur overlay coverage
-- **Movie Match Feature** - Tinder-style movie matching for group viewing decisions with real-time collaboration
+- **Plex Match Feature** - Tinder-style movie matching for group viewing decisions with real-time collaboration
 - Suggests a random unwatched movie, show, anime, or other video from your Plex library
 - **Modern glass morphism UI** with enhanced visual effects and animations
 - **Posters are always visible** (even when hosted behind a tunnel), thanks to backend proxying
@@ -135,9 +135,9 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 - `PLEX_TOKEN`: Your Plex authentication token - **Optional** (can be set via web interface)
 - `PLEX_LIBRARY`: Default Plex library to suggest from (default: "Movies")
 - `JWT_SECRET_KEY`: Secret key for JWT token signing (default provided, change in production)
-- `BACKEND_API_URL`: URL for the plex-backend service for movie match functionality (default: "https://plex-like.satrawi.cc")
+- `BACKEND_API_URL`: URL for the plex-backend service for plex match functionality (default: "https://plex-like.satrawi.cc")
 
-**Note:** When `PLEX_TOKEN` is provided as an environment variable, the app will use it directly and skip the web-based authentication prompt. The app will still obtain JWT tokens for external API integrations (like like/dislike/watch functionality and movie matching) as needed.
+**Note:** When `PLEX_TOKEN` is provided as an environment variable, the app will use it directly and skip the web-based authentication prompt. The app will still obtain JWT tokens for external API integrations (like like/dislike/watch functionality and plex matching) as needed.
 
 ## Usage
 
@@ -281,9 +281,9 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 - **Get watch count:**  
   `GET /watch-count/<movie_id>`
 
-## 🎬 Movie Match API (v1.6+)
+## 🎬 Plex Match API (v1.6+)
 
-The Movie Match feature provides a Tinder-style interface for group movie selection. All endpoints require JWT authentication.
+The Plex Match feature provides a Tinder-style interface for group movie selection. All endpoints require JWT authentication.
 
 **Room Management:**
 - **Create room:**  
@@ -301,16 +301,16 @@ The Movie Match feature provides a Tinder-style interface for group movie select
 - **Get matches:**  
   `GET /api/match/rooms/{room_id}/matches` - Get movies liked by multiple users
 
-**How Movie Match Works:**
+**How Plex Match Works:**
 1. Create or join a room with friends/family
 2. Swipe through movies from your selected Plex library
 3. Movies liked by the minimum number of participants become "matches"
 4. View matches with full details (poster, summary, cast, trailers)
 5. Rooms automatically expire after 24 hours
 
-## 🔧 Movie Match Integration
+## 🔧 Plex Match Integration
 
-The Movie Match feature integrates with the separate `plex-backend` service:
+The Plex Match feature integrates with the separate `plex-backend` service:
 
 - **Authentication:** Uses the same JWT system as like/dislike features
 - **Data Storage:** Room and swipe data stored in PostgreSQL backend

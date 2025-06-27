@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.6.0] - 2025-06-27
 
 ### Added
-- **Movie Match Feature** - Tinder-style movie matching for group viewing decisions
+- **Plex Match Feature** - Tinder-style movie matching for group viewing decisions
   - Create and join match rooms with custom names and settings
   - Swipe left (pass), right (like), or super like movies with animated buttons
   - Real-time match detection when multiple users like the same movie

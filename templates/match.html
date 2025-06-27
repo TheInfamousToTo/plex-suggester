@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Movie Match - Plex Suggester</title>
+  <title>Plex Match - Plex Suggester</title>
   <!-- Add modern fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -725,7 +725,7 @@
       <a href="/" class="nav-btn">← Back to Suggester</a>
     </div>
 
-    <h1>🎬 Movie Match</h1>
+    <h1>🎬 Plex Match</h1>
     <p style="color: #ccc; margin-bottom: 2em;">Swipe together, watch together!</p>
 
     <!-- Main content area -->
@@ -875,7 +875,7 @@
 
     // Initialize the app
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('Movie Match initialized with backend:', BACKEND_API_URL);
+      console.log('Plex Match initialized with backend:', BACKEND_API_URL);
       initializeAuth();
     });
 
@@ -900,11 +900,11 @@
     }
 
     function promptForPlexToken() {
-      const token = prompt('Please enter your Plex token to use Movie Match:');
+      const token = prompt('Please enter your Plex token to use Plex Match:');
       if (token) {
         authenticateWithPlex(token);
       } else {
-        showError('Plex token is required to use Movie Match');
+        showError('Plex token is required to use Plex Match');
       }
     }
 
