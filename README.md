@@ -150,7 +150,6 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 - `PLEX_TOKEN`: Your Plex authentication token - **Optional** (can be set via web interface)
 - `PLEX_LIBRARY`: Default Plex library to suggest from (default: "Movies")
 - `JWT_SECRET_KEY`: Secret key for JWT token signing (default provided, change in production)
-- `BACKEND_API_URL`: URL for the plex-backend service for plex match functionality (default: "https://plex-like.satrawi.cc")
 
 **Note:** When `PLEX_TOKEN` is provided as an environment variable, the app will use it directly and skip the web-based authentication prompt. The app will still obtain JWT tokens for external API integrations (like like/dislike/watch functionality and plex matching) as needed.
 
@@ -163,7 +162,6 @@ docker run -d -p 5000:5000 \
   -e PLEX_URL="http://your-plex-server:32400" \
   -e PLEX_TOKEN="your-plex-token" \
   -e JWT_SECRET_KEY="your-secure-secret-key" \
-  -e BACKEND_API_URL="https://plex-like.satrawi.cc" \
   theinfamoustoto/plex-suggester:latest
 ```
 
@@ -186,7 +184,6 @@ services:
       PLEX_TOKEN: "your-plex-token"  # Recommended for Docker deployments
       PLEX_LIBRARY: "Movies"
       JWT_SECRET_KEY: "change-this-secret-key-in-production"
-      BACKEND_API_URL: "https://plex-like.satrawi.cc"
     restart: unless-stopped
 ```
 
@@ -241,7 +238,6 @@ When you first access the application, you'll be prompted to enter your Plex tok
     # PLEX_TOKEN is optional - you can set it via the web interface
     # export PLEX_TOKEN="your-plex-token"
     export PLEX_LIBRARY="Movies"
-    export BACKEND_API_URL="https://plex-like.satrawi.cc"
     ```
 
 4. Run the app:
@@ -340,7 +336,6 @@ The Plex Match feature integrates with the separate `plex-backend` service:
 - If posters are not visible, ensure the backend can reach your Plex server.
 - Check logs for errors if the app fails to connect or display items.
 - **For like/dislike/watch functionality:** If these features return 401 errors, ensure that:
-  - The external backend service (`https://plex-like.satrawi.cc` in the example) is running and accessible
   - Your Plex token is valid and can authenticate with the external backend
   - The JWT tokens are being obtained correctly (check browser console for authentication messages)
 
