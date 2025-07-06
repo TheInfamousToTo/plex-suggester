@@ -6,7 +6,7 @@ import urllib.parse
 import jwt
 import datetime
 from functools import wraps
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, send_file, jsonify, send_from_directory
 from plexapi.server import PlexServer
 import wikipediaapi
 from io import BytesIO
@@ -1082,6 +1082,22 @@ def proxy_poster(item_key):
             headers={'Location': 'https://via.placeholder.com/250x375/333/e5a00d?text=No+Poster'}
         )
         return fallback_response
+
+
+@app.route('/favicon.ico')
+def favicon():
+    """Serve the favicon"""
+    return send_from_directory('assets', 'favicon.ico', mimetype='image/x-icon')
+
+@app.route('/icon.png')
+def icon():
+    """Serve the icon"""
+    return send_from_directory('assets', 'icon.png', mimetype='image/png')
+
+@app.route('/logo.png')
+def logo():
+    """Serve the logo"""
+    return send_from_directory('assets', 'logo.png', mimetype='image/png')
 
 
 if __name__ == "__main__":
