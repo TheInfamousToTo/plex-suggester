@@ -2,7 +2,7 @@
 
 # Plex Movie Suggester
 
-**Version 1.7.0**
+**Version 1.7.1**
 
 A modern Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
 Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, **secure JWT-based authentication**, and **Plex Match functionality** for group viewing decisions.
@@ -43,6 +43,17 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 
 ---
 
+## 🚀 What's New in v1.7.1
+
+- **Donation Support:**  
+  Added donation buttons (Buy Me a Coffee, Ko-fi) integrated seamlessly into the interface with matching project theme and smooth animations.
+- **Enhanced User Experience:**  
+  Coffee steam and heart pulse animations on hover for donation buttons provide delightful micro-interactions.
+- **Responsive Design:**  
+  Donation buttons adapt perfectly to mobile and desktop layouts while maintaining the elegant glass morphism aesthetic.
+
+---
+
 ## 🚀 What's New in v1.5.0
 
 - **Hybrid Authentication System:**  
@@ -52,11 +63,13 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 - **Settings Management:**  
   Built-in settings modal allows users to securely manage their Plex tokens when not using environment variables.
 - **Enhanced UI/UX:**  
-  Settings button repositioned next to dropdown as elegant icon-only design; fixed blur overlay gaps for seamless full-screen coverage; improved responsive design for all devices.
+  Settings button repositioned next to dropdown as elegant icon-only design; fixed blur overlay gaps for seamless full-screen coverage; improved responsive design for all devices; added donation buttons for supporting the project.
 - **Bearer Token API:**  
   API requests use Bearer token authentication when required for enhanced security.
 - **Improved Security:**  
   Plex tokens are validated server-side and JWT tokens are issued for secure API access to external services.
+- **Support the Project:**  
+  Easy access to donation links (Buy Me a Coffee, Ko-fi) integrated seamlessly into the interface.
 - **Backward Compatibility:**  
   Fully compatible with existing Docker deployments using environment variables.
 
@@ -150,7 +163,7 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 - `PLEX_TOKEN`: Your Plex authentication token - **Optional** (can be set via web interface)
 - `PLEX_LIBRARY`: Default Plex library to suggest from (default: "Movies")
 - `JWT_SECRET_KEY`: Secret key for JWT token signing (default provided, change in production)
-- `BACKEND_API_URL`: URL for the plex-backend service for plex match functionality (default: "https://plex-like.satrawi.cc")
+- `BACKEND_API_URL`: URL for the plex-backend service for plex match functionality (default: "<https://plex-like.satrawi.cc>")
 
 **Note:** When `PLEX_TOKEN` is provided as an environment variable, the app will use it directly and skip the web-based authentication prompt. The app will still obtain JWT tokens for external API integrations (like like/dislike/watch functionality and plex matching) as needed.
 
@@ -301,6 +314,7 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 The Plex Match feature provides a Tinder-style interface for group movie selection. All endpoints require JWT authentication.
 
 **Room Management:**
+
 - **Create room:**  
   `POST /api/match/rooms` - Create a new matching room
 - **Join room:**  
@@ -309,6 +323,7 @@ The Plex Match feature provides a Tinder-style interface for group movie selecti
   `GET /api/match/rooms/{room_id}` - Get room details and participants
 
 **Movie Swiping:**
+
 - **Get next movie:**  
   `GET /api/match/rooms/{room_id}/next-movie` - Get next movie to swipe on
 - **Record swipe:**  
@@ -317,6 +332,7 @@ The Plex Match feature provides a Tinder-style interface for group movie selecti
   `GET /api/match/rooms/{room_id}/matches` - Get movies liked by multiple users
 
 **How Plex Match Works:**
+
 1. Create or join a room with friends/family
 2. Swipe through movies from your selected Plex library
 3. Movies liked by the minimum number of participants become "matches"
@@ -343,6 +359,17 @@ The Plex Match feature integrates with the separate `plex-backend` service:
   - The external backend service (`https://plex-like.satrawi.cc` in the example) is running and accessible
   - Your Plex token is valid and can authenticate with the external backend
   - The JWT tokens are being obtained correctly (check browser console for authentication messages)
+
+## 💖 Support the Project
+
+If you find Plex Movie Suggester useful, consider supporting its development:
+
+- ☕ [Buy me a coffee](https://buymeacoffee.com/theinfamoustoto)
+- 🎁 [Support on Ko-fi](https://ko-fi.com/theinfamoustoto)
+
+Your support helps maintain and improve this project!
+
+---
 
 ## License
 
