@@ -4,6 +4,21 @@ All notable changes to the Plex Suggester project will be documented in this fil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.2] - 2025-07-06
+
+### Added
+- **Favicon Support** - Professional branding with new Plex-style logo
+  - Added new Plex-style logo with orange arrow design
+  - Implemented favicon routes in Flask app (`/favicon.ico`, `/icon.png`, `/logo.png`)
+  - Updated HTML templates with proper favicon links for all browsers
+  - Added support for Apple touch icons and legacy browser compatibility
+  - Improved user experience with branded favicon in browser tabs
+
+### Technical Improvements
+- Enhanced Flask routing with proper MIME types for favicon assets
+- Added `send_from_directory` functionality for static asset serving
+- Cross-browser favicon compatibility with multiple format support
+
 ## [1.7.0] - 2025-06-27
 
 ### Added
