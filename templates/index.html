@@ -1183,7 +1183,7 @@
               document.getElementById('like-count').classList.remove('loading');
             });
           fetch(`${API_BASE}/dislike-count/${encodeURIComponent(movieId)}`)
-            .then r => r.json())
+            .then(r => r.json())
             .then(data => {
               document.getElementById('dislike-count').textContent = ` ${data.count || 0}`;
               document.getElementById('dislike-count').classList.remove('loading');
