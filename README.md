@@ -2,10 +2,23 @@
 
 # Plex Movie Suggester
 
-**Version 1.7.1**
+**Version 1.7.2**
 
 A modern Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
 Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, **secure JWT-based authentication**, and **Plex Match functionality** for group viewing decisions.
+
+---
+
+## 🚀 What's New in v1.7.2
+
+- **Professional Branding:**  
+  Added comprehensive favicon support with new Plex-style logo featuring an orange arrow design for enhanced brand recognition.
+- **Cross-Browser Compatibility:**  
+  Implemented favicon routes (`/favicon.ico`, `/icon.png`, `/logo.png`) with proper MIME types and support for Apple touch icons and legacy browsers.
+- **Enhanced User Experience:**  
+  Branded favicon now appears in browser tabs, bookmarks, and mobile home screen shortcuts for better project identification.
+- **Technical Improvements:**  
+  Enhanced Flask routing with `send_from_directory` functionality for optimized static asset serving.
 
 ---
 
