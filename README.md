@@ -399,3 +399,7 @@ For any questions or feedback, please open an issue or contact me on GitHub.
 ## Credits
 
 This project was created by [theinfamoustoto]
+
+## 📊 Repository Activity
+
+![Alt](https://repobeats.axiom.co/api/embed/873361a7fe0297e069315703570d08988765f81c.svg "Repobeats analytics image")
