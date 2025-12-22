@@ -613,7 +613,411 @@ def api_suggest():
     except Exception as e:
         return jsonify({'error': f'Failed to get suggestion: {str(e)}'}), 500
 
-# ==================== MOVIE MATCH API ENDPOINTS ====================
+# ==================== MOVIE MATCH API ENDPOINTS (LOCAL) ====================
+# Local implementation without external backend dependency
+
+import string
+from database import get_db_connection, init_db
+
+# Initialize database on startup
+try:
+    init_db()
+except Exception as e:
+    print(f"Warning: Could not initialize database: {e}")
+
+def generate_room_code():
+    """Generate a 6-character room code"""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+
+def generate_room_id():
+    """Generate a unique room ID"""
+    return secrets.token_hex(8)
+
+@app.route("/api/match/create", methods=["POST"])
+def create_match_room_local():
+    """Create a new movie matching room (local implementation - no auth required)"""
+    try:
+        data = request.get_json()
+        room_name = data.get('room_name', 'Movie Night')
+        username = data.get('username', 'Anonymous')
+        library_filter = data.get('library', 'Movies')
+        min_participants = data.get('min_participants', 2)
+        
+        # Generate unique IDs
+        room_id = generate_room_id()
+        room_code = generate_room_code()
+        user_id = secrets.token_hex(8)
+        
+        # Calculate expiry (24 hours from now)
+        expires_at = datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Create the room
+        cursor.execute('''
+            INSERT INTO match_rooms (id, name, code, expires_at, library_filter, min_participants)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (room_id, room_name, room_code, expires_at, library_filter, min_participants))
+        
+        # Add creator as first user
+        cursor.execute('''
+            INSERT INTO room_users (room_id, user_id, username)
+            VALUES (?, ?, ?)
+        ''', (room_id, user_id, username))
+        
+        conn.commit()
+        conn.close()
+        
+        # Get movies for the room using environment PLEX_TOKEN
+        plex_token = os.environ.get('PLEX_TOKEN')
+        movies = get_movies_for_match_room(library_filter, plex_token) if plex_token else []
+        
+        return jsonify({
+            'room_id': room_id,
+            'room_code': room_code,
+            'room_name': room_name,
+            'user_id': user_id,
+            'movies': movies
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to create room: {str(e)}'}), 500
+
+@app.route("/api/match/join", methods=["POST"])
+def join_match_room_local():
+    """Join a movie matching room by code (local implementation - no auth required)"""
+    try:
+        data = request.get_json()
+        room_code = data.get('room_code', '').upper()
+        username = data.get('username', 'Anonymous')
+        
+        if not room_code:
+            return jsonify({'error': 'Room code required'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Find room by code
+        cursor.execute('SELECT * FROM match_rooms WHERE code = ? AND expires_at > ?', 
+                      (room_code, datetime.datetime.utcnow()))
+        room = cursor.fetchone()
+        
+        if not room:
+            conn.close()
+            return jsonify({'error': 'Room not found or expired'}), 404
+        
+        room_id = room['id']
+        user_id = secrets.token_hex(8)
+        
+        # Add user to room
+        cursor.execute('''
+            INSERT OR REPLACE INTO room_users (room_id, user_id, username)
+            VALUES (?, ?, ?)
+        ''', (room_id, user_id, username))
+        
+        conn.commit()
+        conn.close()
+        
+        # Get movies for the room using environment PLEX_TOKEN
+        plex_token = os.environ.get('PLEX_TOKEN')
+        movies = get_movies_for_match_room(room['library_filter'], plex_token) if plex_token else []
+        
+        return jsonify({
+            'room_id': room_id,
+            'room_code': room_code,
+            'room_name': room['name'],
+            'user_id': user_id,
+            'movies': movies
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to join room: {str(e)}'}), 500
+
+@app.route("/api/match/join-by-id", methods=["POST"])
+def join_match_room_by_id():
+    """Join a movie matching room by ID (local implementation - no auth required)"""
+    try:
+        data = request.get_json()
+        room_id = data.get('room_id', '')
+        username = data.get('username', 'Anonymous')
+        
+        if not room_id:
+            return jsonify({'error': 'Room ID required'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Find room by ID
+        cursor.execute('SELECT * FROM match_rooms WHERE id = ? AND expires_at > ?', 
+                      (room_id, datetime.datetime.utcnow()))
+        room = cursor.fetchone()
+        
+        if not room:
+            conn.close()
+            return jsonify({'error': 'Room not found or expired'}), 404
+        
+        user_id = secrets.token_hex(8)
+        
+        # Add user to room
+        cursor.execute('''
+            INSERT OR REPLACE INTO room_users (room_id, user_id, username)
+            VALUES (?, ?, ?)
+        ''', (room_id, user_id, username))
+        
+        conn.commit()
+        conn.close()
+        
+        # Get movies for the room using environment PLEX_TOKEN
+        plex_token = os.environ.get('PLEX_TOKEN')
+        movies = get_movies_for_match_room(room['library_filter'], plex_token) if plex_token else []
+        
+        return jsonify({
+            'room_id': room_id,
+            'room_code': room['code'],
+            'room_name': room['name'],
+            'user_id': user_id,
+            'movies': movies
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to join room: {str(e)}'}), 500
+
+@app.route("/api/match/rejoin", methods=["POST"])
+def rejoin_match_room():
+    """Rejoin a room from saved session (local implementation - no auth required)"""
+    try:
+        data = request.get_json()
+        room_id = data.get('room_id', '')
+        username = data.get('username', 'Anonymous')
+        
+        if not room_id:
+            return jsonify({'error': 'Room ID required'}), 400
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Find room
+        cursor.execute('SELECT * FROM match_rooms WHERE id = ? AND expires_at > ?', 
+                      (room_id, datetime.datetime.utcnow()))
+        room = cursor.fetchone()
+        
+        if not room:
+            conn.close()
+            return jsonify({'error': 'Room not found or expired'}), 404
+        
+        # Get user's seen movies
+        cursor.execute('''
+            SELECT movie_id FROM movie_swipes 
+            WHERE room_id = ? AND user_id IN (
+                SELECT user_id FROM room_users WHERE room_id = ? AND username = ?
+            )
+        ''', (room_id, room_id, username))
+        seen_movies = [row['movie_id'] for row in cursor.fetchall()]
+        
+        conn.close()
+        
+        # Get movies for the room using environment PLEX_TOKEN
+        plex_token = os.environ.get('PLEX_TOKEN')
+        movies = get_movies_for_match_room(room['library_filter'], plex_token) if plex_token else []
+        
+        return jsonify({
+            'room_id': room_id,
+            'room_code': room['code'],
+            'room_name': room['name'],
+            'movies': movies,
+            'seen_movies': seen_movies,
+            'current_index': len(seen_movies)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to rejoin room: {str(e)}'}), 500
+
+@app.route("/api/match/rooms", methods=["GET"])
+def list_match_rooms_local():
+    """List all active movie matching rooms (local implementation - no auth required)"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get active rooms with participant count
+        cursor.execute('''
+            SELECT r.*, COUNT(u.user_id) as participants
+            FROM match_rooms r
+            LEFT JOIN room_users u ON r.id = u.room_id
+            WHERE r.expires_at > ?
+            GROUP BY r.id
+            ORDER BY r.created_at DESC
+        ''', (datetime.datetime.utcnow(),))
+        
+        rooms = []
+        for row in cursor.fetchall():
+            rooms.append({
+                'id': row['id'],
+                'name': row['name'],
+                'code': row['code'],
+                'participants': row['participants'],
+                'library_filter': row['library_filter'],
+                'created_at': row['created_at']
+            })
+        
+        conn.close()
+        return jsonify({'rooms': rooms})
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to list rooms: {str(e)}'}), 500
+
+@app.route("/api/match/state/<room_id>", methods=["GET"])
+def get_match_room_state(room_id):
+    """Get current state of a match room (local implementation - no auth required)"""
+    try:
+        user = request.args.get('user', '')
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get room info
+        cursor.execute('SELECT * FROM match_rooms WHERE id = ? AND expires_at > ?', 
+                      (room_id, datetime.datetime.utcnow()))
+        room = cursor.fetchone()
+        
+        if not room:
+            conn.close()
+            return jsonify({'error': 'Room not found or expired'}), 404
+        
+        # Get participants
+        cursor.execute('SELECT username FROM room_users WHERE room_id = ?', (room_id,))
+        participants = [row['username'] for row in cursor.fetchall()]
+        
+        # Get matches (movies liked by min_participants users)
+        cursor.execute('''
+            SELECT movie_id, movie_title, movie_year, COUNT(DISTINCT user_id) as like_count
+            FROM movie_swipes
+            WHERE room_id = ? AND swipe_direction IN ('right', 'super')
+            GROUP BY movie_id
+            HAVING like_count >= ?
+            ORDER BY like_count DESC
+        ''', (room_id, room['min_participants']))
+        
+        matches = []
+        for row in cursor.fetchall():
+            matches.append({
+                'movie_id': row['movie_id'],
+                'title': row['movie_title'],
+                'year': row['movie_year'],
+                'like_count': row['like_count']
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'room_id': room_id,
+            'room_name': room['name'],
+            'participants': participants,
+            'matches': matches
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get room state: {str(e)}'}), 500
+
+@app.route("/api/match/swipe", methods=["POST"])
+def record_swipe_local():
+    """Record a swipe on a movie (local implementation - no auth required)"""
+    try:
+        data = request.get_json()
+        room_id = data.get('room_id')
+        username = data.get('username')
+        movie_id = data.get('movie_id')
+        action = data.get('action', 'pass')  # 'like' or 'pass'
+        
+        if not all([room_id, username, movie_id]):
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        # Map action to direction
+        direction = 'right' if action == 'like' else 'left'
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Get user_id from username
+        cursor.execute('SELECT user_id FROM room_users WHERE room_id = ? AND username = ?',
+                      (room_id, username))
+        user_row = cursor.fetchone()
+        
+        if not user_row:
+            conn.close()
+            return jsonify({'error': 'User not in room'}), 400
+        
+        user_id = user_row['user_id']
+        
+        # Record swipe
+        cursor.execute('''
+            INSERT OR REPLACE INTO movie_swipes (room_id, user_id, movie_id, movie_title, swipe_direction)
+            VALUES (?, ?, ?, '', ?)
+        ''', (room_id, user_id, movie_id, direction))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to record swipe: {str(e)}'}), 500
+
+def get_movies_for_match_room(library_filter, plex_token):
+    """Get movies from Plex for a match room"""
+    try:
+        # Use the token provided or fall back to env
+        token = plex_token or PLEX_TOKEN
+        if not token:
+            return []
+        
+        plex = PlexServer(PLEX_URL, token)
+        
+        # Try to find matching library
+        library = None
+        for section in plex.library.sections():
+            if section.title.lower() == library_filter.lower():
+                library = section
+                break
+        
+        if not library:
+            # Fall back to first movie library
+            for section in plex.library.sections():
+                if section.type == 'movie':
+                    library = section
+                    break
+        
+        if not library:
+            return []
+        
+        # Get unwatched movies using fast filter
+        movies = library.search(unwatched=True, limit=200)
+        
+        # Convert to simple dict format
+        movie_list = []
+        for movie in movies[:100]:  # Limit to 100
+            poster_url = ''
+            if hasattr(movie, 'thumb') and movie.thumb:
+                poster_url = f"{PLEX_URL}{movie.thumb}?X-Plex-Token={token}"
+            
+            movie_list.append({
+                'id': str(movie.ratingKey),
+                'title': movie.title,
+                'year': getattr(movie, 'year', ''),
+                'summary': getattr(movie, 'summary', '')[:300],
+                'poster': poster_url
+            })
+        
+        random.shuffle(movie_list)
+        return movie_list
+        
+    except Exception as e:
+        print(f"Error getting movies for match: {e}")
+        return []
+
+# ==================== LEGACY MATCH API ENDPOINTS ====================
+# Keep these for backwards compatibility but they proxy to local implementation
 
 @app.route("/api/match/rooms", methods=["POST"])
 @token_required

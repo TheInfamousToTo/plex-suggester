@@ -4,6 +4,34 @@ All notable changes to the Plex Suggester project will be documented in this fil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2025-12-22
+
+### Added
+- **Modern UI Redesign** - Complete visual overhaul
+  - New glass morphism design with CSS variables system
+  - Space Grotesk + Inter font combination
+  - Animated gradient backgrounds with subtle pulse effects
+  - Modern buttons with shine effects and hover animations
+  - Improved responsive design with breakpoints at 480px, 768px, 1200px
+
+### Changed
+- **Plex Match Page Modernized** - Consistent design language
+  - Redesigned room cards with glass morphism effect
+  - Updated swipe buttons with rotation animations
+  - Improved notification styling
+  - Better modal dialogs with modern input fields
+
+- **Match API Simplified** - No authentication required
+  - Local match endpoints no longer require JWT authentication
+  - Uses environment PLEX_TOKEN directly for Plex API calls
+  - Simplified room creation and joining workflow
+  - Better error handling and user feedback
+
+### Fixed
+- Match room creation now works without requiring JWT token
+- Removed duplicate CSS code from match.html
+- Fixed authentication issues with local match implementation
+
 ## [1.8.0] - 2025-12-22
 
 ### Added

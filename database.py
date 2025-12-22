@@ -13,6 +13,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS match_rooms (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
+            code TEXT UNIQUE,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             expires_at TIMESTAMP,
             library_filter TEXT DEFAULT 'Movies',
