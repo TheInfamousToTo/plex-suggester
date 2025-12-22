@@ -405,6 +405,17 @@ def get_random_movie_fast(library_name=None, plex_token=None):
         if not getattr(item, "title", None):
             item.title = "Untitled"
 
+        # Get genres directly from Plex
+        item.genres = [g.tag for g in getattr(item, 'genres', [])][:4] if hasattr(item, 'genres') else []
+        
+        # Get duration
+        duration = getattr(item, 'duration', None)
+        if duration:
+            minutes = duration // 60000
+            item.duration_formatted = f"{minutes // 60}h {minutes % 60}m" if minutes >= 60 else f"{minutes}m"
+        else:
+            item.duration_formatted = None
+
         return None, item
 
     except Exception as e:
@@ -495,6 +506,22 @@ def get_random_movie(library_name=None, plex_token=None):
         # Add title fallback
         if not getattr(item, "title", None):
             item.title = "Untitled"
+
+        # Add genres (first 4)
+        item.genres = [g.tag for g in getattr(item, 'genres', [])][:4]
+        
+        # Add duration formatted
+        duration_ms = getattr(item, 'duration', None)
+        if duration_ms:
+            total_minutes = duration_ms // 60000
+            hours = total_minutes // 60
+            minutes = total_minutes % 60
+            if hours > 0:
+                item.duration_formatted = f"{hours}h {minutes}m"
+            else:
+                item.duration_formatted = f"{minutes}m"
+        else:
+            item.duration_formatted = None
 
         return None, item
 
@@ -606,7 +633,9 @@ def api_suggest():
             'watch_url': getattr(movie, 'watch_url', ''),
             'trailer_url': getattr(movie, 'trailer_url', ''),
             'external_trailer_url': getattr(movie, 'external_trailer_url', ''),
-            'cast': getattr(movie, 'cast', [])
+            'cast': getattr(movie, 'cast', []),
+            'genres': getattr(movie, 'genres', []),
+            'duration_formatted': getattr(movie, 'duration_formatted', None)
         }
         
         return jsonify({'movie': movie_data})

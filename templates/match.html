@@ -277,6 +277,46 @@
       transform: rotate(90deg);
     }
 
+    .modal-title {
+      color: var(--plex-orange);
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 0.875rem 1rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-accent);
+      background: rgba(0, 0, 0, 0.4);
+      color: var(--text-primary);
+      font-size: 1rem;
+      font-family: var(--font-main);
+      transition: var(--transition-normal);
+      margin-bottom: 1rem;
+    }
+
+    .modal-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .modal-input:focus {
+      outline: none;
+      border-color: var(--plex-orange);
+      box-shadow: 0 0 0 3px rgba(229, 160, 13, 0.15);
+      background: rgba(229, 160, 13, 0.05);
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
     .form-group {
       margin-bottom: 1.5rem;
       text-align: left;
@@ -515,6 +555,33 @@
 
     .room-info strong {
       color: var(--plex-orange);
+    }
+
+    /* ==================== ROOM HEADER ==================== */
+    .room-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .room-header .room-name {
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      color: var(--plex-orange);
+      margin-bottom: 0.5rem;
+    }
+
+    .room-header .room-code {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 1.25rem;
+      font-weight: 500;
+    }
+
+    .participants-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-top: 1.25rem;
+      margin-bottom: 2rem;
     }
 
     .participants {
@@ -826,7 +893,7 @@
 
     .notification {
       background: linear-gradient(135deg, var(--match-green) 0%, var(--match-green-dark) 100%);
-      color: var(--bg-primary);
+      color: #000000;
       padding: 1rem 1.5rem;
       margin-bottom: 0.75rem;
       border-radius: var(--radius-lg);
@@ -857,12 +924,13 @@
     .notification-title {
       font-weight: 700;
       font-size: 0.9375rem;
+      color: #000000;
     }
 
     .notification-close {
       background: none;
       border: none;
-      color: var(--bg-primary);
+      color: #000000;
       font-size: 1.25rem;
       cursor: pointer;
       padding: 0;
@@ -879,6 +947,8 @@
     .notification-body {
       font-size: 0.875rem;
       line-height: 1.4;
+      color: #000000;
+      font-weight: 500;
     }
 
     .notification-movie {
@@ -1217,8 +1287,21 @@
       </div>
     </div>
 
+    <!-- Quick Join Modal -->
+    <div id="quick-join-modal" class="modal">
+      <div class="modal-content">
+        <h3 class="modal-title">Join <span id="quick-join-room-name"></span></h3>
+        <input type="text" id="quick-join-username" placeholder="Enter your name" class="modal-input" maxlength="30">
+        <input type="hidden" id="quick-join-room-id">
+        <div class="modal-buttons">
+          <button class="btn" onclick="submitQuickJoin()">Join Room</button>
+          <button class="btn btn-secondary" onclick="closeModal('quick-join-modal')">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Notification container -->
-    <div id="notification-container"></div>
+    <div id="notification-container" class="notification-container"></div>
   </div>
 
   <script>
@@ -1248,12 +1331,38 @@
       const container = document.getElementById('notification-container');
       const notification = document.createElement('div');
       notification.className = `notification ${type}`;
+      
+      // Set background based on type
+      if (type === 'error') {
+        notification.style.background = 'linear-gradient(135deg, var(--pass-red) 0%, var(--pass-red-dark) 100%)';
+        notification.style.boxShadow = '0 15px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 68, 88, 0.3)';
+      } else if (type === 'success') {
+        notification.style.background = 'linear-gradient(135deg, var(--match-green) 0%, var(--match-green-dark) 100%)';
+        notification.style.boxShadow = '0 15px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(66, 230, 149, 0.3)';
+      } else {
+        notification.style.background = 'linear-gradient(135deg, var(--plex-orange) 0%, var(--plex-orange-dark) 100%)';
+        notification.style.boxShadow = '0 15px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(229, 160, 13, 0.3)';
+      }
+      
       notification.innerHTML = `
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()">×</button>
+        <div class="notification-header">
+          <span class="notification-title">${type === 'error' ? '❌ Error' : type === 'success' ? '✅ Success' : 'ℹ️ Info'}</span>
+          <button class="notification-close" onclick="this.closest('.notification').remove()">×</button>
+        </div>
+        <div class="notification-body">${message}</div>
       `;
       container.appendChild(notification);
-      setTimeout(() => notification.remove(), 5000);
+      
+      // Trigger animation after adding to DOM
+      requestAnimationFrame(() => {
+        notification.classList.add('show');
+      });
+      
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        notification.classList.add('hide');
+        setTimeout(() => notification.remove(), 400);
+      }, 5000);
     }
 
     async function loadActiveRooms() {
@@ -1604,11 +1713,35 @@
     }
 
     function quickJoin(roomId, roomName) {
-      const username = prompt(`Enter your name to join "${roomName}":`);
-      if (username && username.trim()) {
-        joinRoomWithId(roomId, username.trim());
-      }
+      document.getElementById('quick-join-room-name').textContent = roomName;
+      document.getElementById('quick-join-room-id').value = roomId;
+      document.getElementById('quick-join-username').value = '';
+      document.getElementById('quick-join-modal').style.display = 'flex';
+      document.getElementById('quick-join-username').focus();
     }
+
+    function submitQuickJoin() {
+      const roomId = document.getElementById('quick-join-room-id').value;
+      const username = document.getElementById('quick-join-username').value.trim();
+      
+      if (!username) {
+        showNotification('Please enter your name', 'error');
+        return;
+      }
+      
+      closeModal('quick-join-modal');
+      joinRoomWithId(roomId, username);
+    }
+
+    // Handle Enter key in quick join modal
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const quickJoinModal = document.getElementById('quick-join-modal');
+        if (quickJoinModal && quickJoinModal.style.display === 'flex') {
+          submitQuickJoin();
+        }
+      }
+    });
 
     window.onclick = function(event) {
       const modals = document.querySelectorAll('.modal');
