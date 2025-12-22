@@ -4,6 +4,48 @@ All notable changes to the Plex Suggester project will be documented in this fil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2025-12-22
+
+### Added
+- **Movie Comparison Mode** - New feature for indecisive viewers
+  - Side-by-side comparison of 2-3 random movies
+  - Beautiful card-based UI with poster, title, year, genres, rating, and duration
+  - Click-to-select interaction with visual feedback
+  - "New Options" button to refresh movie choices
+  - Responsive grid layout (1/2/3 columns based on screen size)
+  - New `/api/compare` endpoint for fetching comparison movies
+
+- **Lazy-Loading Actor Images** - Progressive image loading
+  - Actor images load asynchronously after page render
+  - New `/api/actor-image/{name}` endpoint
+  - Multiple fallback sources: Wikipedia → Wikipedia Search → AniList → Initials placeholder
+  - Proper URL encoding and User-Agent headers for reliable Wikipedia API access
+
+- **Async Trailer Loading** - Background trailer URL fetching
+  - New `/api/trailer/{movie_id}` endpoint
+  - Trailer button shows "Loading..." then becomes active
+  - Page no longer blocked by slow DuckDuckGo/YouTube searches
+
+### Changed
+- **Massive Performance Improvements**
+  - Main page now uses `get_random_movie_fast()` - no external API calls on initial load
+  - Anime/TV show libraries use Plex's native `unwatched=True` filter instead of iterating all episodes
+  - Removed slow IMDB scraping from initial page load
+  - Actor images, trailers load progressively via AJAX
+
+### Security
+- **Enhanced JWT Authentication**
+  - Fixed critical vulnerability in `require_jwt_auth` decorator (was only checking token length!)
+  - Added secure random key generation when `JWT_SECRET_KEY` not provided
+  - Added `iss` (issuer) and `aud` (audience) claims to JWT tokens
+  - Added `nbf` (not-before) claim for additional security
+  - Strict token verification requiring all security claims
+  - Removed weak default secret key from Dockerfile
+
+### Fixed
+- Wikipedia actor image API now works reliably with proper URL encoding
+- Anime library no longer takes 30+ seconds to load
+
 ## [1.7.2] - 2025-07-06
 
 ### Added

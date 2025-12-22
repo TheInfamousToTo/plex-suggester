@@ -5,6 +5,8 @@ import requests
 import urllib.parse
 import jwt
 import datetime
+import secrets
+import hashlib
 from functools import wraps
 from flask import Flask, render_template, request, send_file, jsonify, send_from_directory
 from plexapi.server import PlexServer
@@ -13,11 +15,17 @@ from io import BytesIO
 
 app = Flask(__name__)
 
-# JWT Secret Key - should be set via environment variable in production
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
+# JWT Secret Key - MUST be set via environment variable in production
+# Generate a secure random key if not provided (will change on restart - not ideal for production)
+_default_secret = os.getenv("JWT_SECRET_KEY")
+if not _default_secret or _default_secret == "your-secret-key-change-in-production":
+    _default_secret = secrets.token_hex(32)  # 256-bit random key
+    print("⚠️  WARNING: Using auto-generated JWT_SECRET_KEY. Set JWT_SECRET_KEY env var for production!")
+
+JWT_SECRET_KEY = _default_secret
 
 # Enable sessions for caching
-app.secret_key = os.getenv("FLASK_SECRET_KEY", JWT_SECRET_KEY)
+app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 
 # Backend API configuration
 BACKEND_API_URL = os.getenv("BACKEND_API_URL", "https://plex-like.satrawi.cc")
@@ -47,10 +55,17 @@ def verify_plex_token(plex_token, plex_url=None):
 
 def generate_jwt_token(plex_token):
     """Generate JWT token for authenticated user"""
+    # Hash the plex_token instead of storing it directly (more secure)
+    plex_token_hash = hashlib.sha256(plex_token.encode()).hexdigest()[:16]
+    
     payload = {
-        'plex_token': plex_token,
+        'plex_token': plex_token,  # Still needed for API calls
+        'plex_hash': plex_token_hash,  # For verification without exposing full token
+        'iss': 'plex-suggester',  # Issuer claim
+        'aud': 'plex-suggester-api',  # Audience claim
         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=30),
-        'iat': datetime.datetime.utcnow()
+        'iat': datetime.datetime.utcnow(),
+        'nbf': datetime.datetime.utcnow(),  # Not valid before
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm='HS256')
 
@@ -83,16 +98,23 @@ def require_jwt_auth(f):
             # Extract token
             token = auth_header.split(' ')[1]
             
-            # Verify token (basic verification - the backend will do the real verification)
-            # We mainly use this to ensure the frontend is sending a proper token format
-            if not token or len(token) < 10:
-                raise ValueError("Invalid token format")
+            # PROPERLY verify JWT signature and expiration
+            payload = verify_jwt_token(token)
+            if payload is None:
+                return jsonify({'error': 'Invalid or expired token'}), 401
+            
+            # Add plex_token to request context for use in the endpoint
+            request.plex_token = payload.get('plex_token')
             
             # Pass through to the actual function
             return f(*args, **kwargs)
             
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token has expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
         except Exception as e:
-            return jsonify({'error': 'Invalid or expired token'}), 401
+            return jsonify({'error': 'Authentication failed'}), 401
     
     return decorated_function
 
@@ -114,13 +136,27 @@ def make_backend_request(method, endpoint, headers=None, json_data=None, params=
         return None
 
 def verify_jwt_token(token):
-    """Verify and decode JWT token"""
+    """Verify and decode JWT token with full validation"""
     try:
-        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'])
+        payload = jwt.decode(
+            token, 
+            JWT_SECRET_KEY, 
+            algorithms=['HS256'],
+            options={
+                'require': ['exp', 'iat', 'iss', 'aud'],  # Require these claims
+                'verify_exp': True,
+                'verify_iat': True,
+                'verify_nbf': True,
+            },
+            issuer='plex-suggester',
+            audience='plex-suggester-api'
+        )
         return payload
     except jwt.ExpiredSignatureError:
         return None
     except jwt.InvalidTokenError:
+        return None
+    except Exception:
         return None
 
 def token_required(f):
@@ -150,17 +186,50 @@ def token_required(f):
     return decorated
 
 def get_wikipedia_actor_image(actor_name):
+    """Fetch actor image from Wikipedia API"""
     try:
-        url = f"https://en.wikipedia.org/w/api.php?action=query&titles={actor_name}&prop=pageimages&format=json&pithumbsize=200"
-        resp = requests.get(url, timeout=2).json()
-        pages = resp.get("query", {}).get("pages", {})
+        # Properly encode the actor name for URL
+        encoded_name = urllib.parse.quote(actor_name.replace(' ', '_'))
+        url = f"https://en.wikipedia.org/w/api.php?action=query&titles={encoded_name}&prop=pageimages&format=json&pithumbsize=200"
+        headers = {
+            "User-Agent": "PlexSuggester/1.0 (https://github.com/plex-suggester; contact@example.com)"
+        }
+        resp = requests.get(url, headers=headers, timeout=5)
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        pages = data.get("query", {}).get("pages", {})
         for pageid, pagedata in pages.items():
             thumbnail = pagedata.get("thumbnail", {})
             if thumbnail:
                 return thumbnail.get("source")
     except Exception:
         pass
-    return None  # Always return None if anything fails
+    return None
+
+def get_tmdb_actor_image(actor_name):
+    """Fetch actor image from TMDB API (free, no key needed for search)"""
+    try:
+        # Use TMDB search which works without API key for basic info
+        search_url = f"https://api.themoviedb.org/3/search/person?query={urllib.parse.quote(actor_name)}"
+        # Try without API key first - may work for cached/public results
+        headers = {"User-Agent": "Mozilla/5.0"}
+        
+        # Alternative: Use a free image search
+        # Search Wikipedia with the actor name + "actor" for better results
+        wiki_search_url = f"https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch={urllib.parse.quote(actor_name + ' actor')}&format=json"
+        resp = requests.get(wiki_search_url, headers={"User-Agent": "PlexSuggester/1.0"}, timeout=5)
+        if resp.status_code == 200:
+            data = resp.json()
+            search_results = data.get("query", {}).get("search", [])
+            if search_results:
+                # Get the first result's title and fetch its image
+                title = search_results[0].get("title", "")
+                if title:
+                    return get_wikipedia_actor_image(title)
+    except Exception:
+        pass
+    return None
 
 def get_imdb_actor_image(actor_name):
     """
@@ -242,9 +311,10 @@ def get_random_movie_lightweight(library_name=None, plex_token=None):
         if section.type == "movie":
             items = section.search(unwatched=True)
         elif section.type in ("show", "anime"):
-            # Suggest a random show with unwatched episodes
-            shows = section.search()
-            items = [show for show in shows if any(not ep.isWatched for ep in show.episodes())]
+            # FAST: Use Plex's unwatched filter - returns shows with unwatched episodes
+            items = section.search(unwatched=True)
+            if not items:
+                items = section.search()  # Fallback to all shows
         else:
             items = section.search(unwatched=True)
 
@@ -272,6 +342,74 @@ def get_random_movie_lightweight(library_name=None, plex_token=None):
     except Exception as e:
         return f"❌ Error getting random movie: {str(e)}", None
 
+def get_random_movie_fast(library_name=None, plex_token=None):
+    """Fast version - only Plex data, no external API calls"""
+    token = plex_token or PLEX_TOKEN
+    if not PLEX_URL or not token:
+        return "⚠️ Please set PLEX_URL and PLEX_TOKEN environment variables.", None
+
+    try:
+        plex = PlexServer(PLEX_URL, token)
+        server_id = plex.machineIdentifier
+        lib_name = library_name or LIBRARY_NAME
+        section = plex.library.section(lib_name)
+        
+        if section.type == "movie":
+            items = section.search(unwatched=True)
+        elif section.type in ("show", "anime"):
+            # FAST: Use Plex's unwatched filter - returns shows with unwatched episodes
+            items = section.search(unwatched=True)
+            if not items:
+                items = section.search()  # Fallback to all shows
+        else:
+            items = section.search(unwatched=True)
+
+        if not items:
+            return "✅ No unwatched items found!", None
+
+        item = random.choice(items)
+
+        # Poster URL - use proxy route
+        if getattr(item, "thumb", None):
+            item.poster_url = f"/poster{item.thumb}"
+        else:
+            item.poster_url = "https://via.placeholder.com/250x375/333/e5a00d?text=No+Poster"
+
+        # Fast cast - store names, images will be lazy-loaded via AJAX
+        cast = []
+        for actor in getattr(item, "roles", [])[:5]:
+            if getattr(actor, "thumb", None):
+                # Use Plex thumb if available
+                actor_thumb = f"/poster{actor.thumb}"
+            else:
+                # Placeholder - will be replaced by lazy-loaded image
+                actor_thumb = None
+            cast.append({
+                "name": actor.tag,
+                "thumb": actor_thumb
+            })
+        item.cast = cast
+
+        # Skip external trailer lookup - will be loaded via AJAX
+        item.external_trailer_url = None
+        item.trailer_url = None
+
+        # Watch on Plex URL
+        item.watch_url = f"{PLEX_URL}/web/index.html#!/server/{server_id}/details?key={item.key}"
+
+        # Fallbacks
+        if not getattr(item, "summary", None):
+            item.summary = "No summary available."
+        if not getattr(item, "year", None):
+            item.year = ""
+        if not getattr(item, "title", None):
+            item.title = "Untitled"
+
+        return None, item
+
+    except Exception as e:
+        return f"❌ Error: {e}", None
+
 def get_random_movie(library_name=None, plex_token=None):
     # Use provided token or fallback to environment variable
     token = plex_token or PLEX_TOKEN
@@ -287,9 +425,10 @@ def get_random_movie(library_name=None, plex_token=None):
         if section.type == "movie":
             items = section.search(unwatched=True)
         elif section.type in ("show", "anime"):
-            # Suggest a random show with unwatched episodes
-            shows = section.search()
-            items = [show for show in shows if any(not ep.isWatched for ep in show.episodes())]
+            # FAST: Use Plex's unwatched filter - returns shows with unwatched episodes
+            items = section.search(unwatched=True)
+            if not items:
+                items = section.search()  # Fallback to all shows
         else:
             items = section.search(unwatched=True)
 
@@ -1010,14 +1149,187 @@ def get_watch_history():
 
 # ==================== END WATCHLIST & WATCH TRACKING ====================
 
+# ==================== MOVIE COMPARISON MODE ====================
+
+@app.route("/api/compare", methods=["GET"])
+def get_comparison_movies():
+    """Get 2-3 random movies for comparison mode - FAST version"""
+    try:
+        count = request.args.get("count", 3, type=int)
+        library_name = request.args.get("library")
+        
+        # Limit count to prevent abuse
+        if count > 3:
+            count = 3
+        if count < 2:
+            count = 2
+        
+        # Use environment token if available
+        token = PLEX_TOKEN
+        if not token:
+            # Try to get token from Authorization header
+            auth_header = request.headers.get('Authorization')
+            if auth_header:
+                try:
+                    jwt_token = auth_header.split(" ")[1]
+                    payload = verify_jwt_token(jwt_token)
+                    if payload:
+                        token = payload['plex_token']
+                except (IndexError, KeyError):
+                    pass
+        
+        if not token:
+            return jsonify({'error': 'Authentication required'}), 401
+        
+        lib_name = library_name or LIBRARY_NAME
+        
+        # Connect to Plex once
+        plex = PlexServer(PLEX_URL, token)
+        server_id = plex.machineIdentifier
+        section = plex.library.section(lib_name)
+        
+        # Get unwatched items
+        if section.type == "movie":
+            items = section.search(unwatched=True)
+        elif section.type in ("show", "anime"):
+            shows = section.search()
+            items = [show for show in shows if any(not ep.isWatched for ep in show.episodes())]
+        else:
+            items = section.search(unwatched=True)
+        
+        if not items:
+            return jsonify({'error': 'No unwatched items found'}), 404
+        
+        # Randomly select unique movies
+        movies = []
+        seen_ids = set()
+        random.shuffle(items)  # Shuffle once instead of random.choice each time
+        
+        for item in items:
+            if len(movies) >= count:
+                break
+                
+            movie_id = str(item.ratingKey)
+            if movie_id in seen_ids:
+                continue
+            seen_ids.add(movie_id)
+            
+            # Build movie data - NO external API calls, just Plex data
+            poster_url = f"/poster{item.thumb}" if getattr(item, "thumb", None) else "https://via.placeholder.com/300x450/333/e5a00d?text=No+Poster"
+            watch_url = f"{PLEX_URL}/web/index.html#!/server/{server_id}/details?key={item.key}"
+            
+            # Get genres directly from Plex
+            genres = [g.tag for g in getattr(item, 'genres', [])][:3] if hasattr(item, 'genres') else []
+            
+            # Get duration
+            duration = getattr(item, 'duration', None)
+            if duration:
+                minutes = duration // 60000
+                duration_formatted = f"{minutes // 60}h {minutes % 60}m" if minutes >= 60 else f"{minutes}m"
+            else:
+                duration_formatted = None
+            
+            movie_data = {
+                'id': movie_id,
+                'key': item.key if hasattr(item, 'key') else '',
+                'title': getattr(item, 'title', 'Untitled'),
+                'year': getattr(item, 'year', ''),
+                'summary': getattr(item, 'summary', 'No summary available.'),
+                'poster_url': poster_url,
+                'watch_url': watch_url,
+                'rating': getattr(item, 'rating', None),
+                'duration': duration,
+                'duration_formatted': duration_formatted,
+                'genres': genres
+            }
+            
+            movies.append(movie_data)
+        
+        if not movies:
+            return jsonify({'error': 'No movies found in library'}), 404
+        
+        return jsonify({'movies': movies, 'count': len(movies)})
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to get comparison movies: {str(e)}'}), 500
+
+# ==================== END MOVIE COMPARISON MODE ====================
+
 @app.route("/", methods=["GET"])
 def home():
     selected_library = request.args.get("library") or LIBRARY_NAME
     # Use environment token if available for backward compatibility
     token = PLEX_TOKEN
     libraries = get_plex_libraries(token)
-    error, movie = get_random_movie(selected_library, token)
+    # Use FAST version for initial page load
+    error, movie = get_random_movie_fast(selected_library, token)
     return render_template("index.html", error=error, movie=movie, libraries=libraries, selected_library=selected_library, has_env_token=bool(PLEX_TOKEN), plex_token=PLEX_TOKEN if PLEX_TOKEN else "")
+
+@app.route("/api/trailer/<movie_id>")
+def get_trailer_url(movie_id):
+    """Lazy-load trailer URL for a movie"""
+    try:
+        token = PLEX_TOKEN
+        if not token:
+            auth_header = request.headers.get('Authorization')
+            if auth_header:
+                try:
+                    jwt_token = auth_header.split(" ")[1]
+                    payload = verify_jwt_token(jwt_token)
+                    if payload:
+                        token = payload['plex_token']
+                except (IndexError, KeyError):
+                    pass
+        
+        if not token:
+            return jsonify({'error': 'Authentication required'}), 401
+        
+        # Get movie details from Plex
+        plex = PlexServer(PLEX_URL, token)
+        movie = plex.fetchItem(int(movie_id))
+        
+        if movie:
+            title = getattr(movie, 'title', '')
+            year = getattr(movie, 'year', None)
+            trailer_url = get_external_trailer_url(title, year)
+            return jsonify({'trailer_url': trailer_url})
+        
+        return jsonify({'trailer_url': None})
+        
+    except Exception as e:
+        return jsonify({'error': str(e), 'trailer_url': None}), 500
+
+@app.route("/api/actor-image/<path:actor_name>")
+def get_actor_image(actor_name):
+    """Lazy-load actor image from external sources with multiple fallbacks"""
+    try:
+        image_url = None
+        
+        # 1. Try Wikipedia with direct name
+        image_url = get_wikipedia_actor_image(actor_name)
+        
+        # 2. Try Wikipedia search (finds actor even with different page title)
+        if not image_url:
+            image_url = get_tmdb_actor_image(actor_name)
+        
+        # 3. Try AniList for anime voice actors
+        if not image_url:
+            image_url = get_anilist_actor_image(actor_name)
+        
+        # 4. Try with "(actor)" suffix for disambiguation
+        if not image_url:
+            image_url = get_wikipedia_actor_image(f"{actor_name} (actor)")
+        
+        # Fallback: Generate initial-based placeholder
+        if not image_url:
+            initials = ''.join([n[0] for n in actor_name.split()[:2]]).upper()
+            image_url = f"https://via.placeholder.com/120x120/333/e5a00d?text={initials}"
+        
+        return jsonify({'image_url': image_url})
+        
+    except Exception as e:
+        initials = ''.join([n[0] for n in actor_name.split()[:2]]).upper() if actor_name else '?'
+        return jsonify({'image_url': f"https://via.placeholder.com/120x120/333/e5a00d?text={initials}"})
 
 @app.route("/match")
 def movie_match():

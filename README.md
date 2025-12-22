@@ -2,27 +2,29 @@
 
 # Plex Movie Suggester
 
-**Version 1.7.2**
+**Version 1.8.0**
 
 A modern Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
 Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, **secure JWT-based authentication**, and **Plex Match functionality** for group viewing decisions.
 
 ---
 
-## 🚀 What's New in v1.7.2
+## 🚀 What's New in v1.8.0
 
-- **Professional Branding:**  
-  Added comprehensive favicon support with new Plex-style logo featuring an orange arrow design for enhanced brand recognition.
-- **Cross-Browser Compatibility:**  
-  Implemented favicon routes (`/favicon.ico`, `/icon.png`, `/logo.png`) with proper MIME types and support for Apple touch icons and legacy browsers.
-- **Enhanced User Experience:**  
-  Branded favicon now appears in browser tabs, bookmarks, and mobile home screen shortcuts for better project identification.
-- **Technical Improvements:**  
-  Enhanced Flask routing with `send_from_directory` functionality for optimized static asset serving.
+- **🎬 Movie Comparison Mode:**  
+  New side-by-side comparison view showing 2-3 random movies at once. Click to select your choice, then watch or get new options. Perfect for when you can't decide!
+- **⚡ Blazing Fast Performance:**  
+  Complete performance overhaul - pages now load instantly. Anime/TV libraries that took 30+ seconds now load in under 1 second.
+- **🔐 Enhanced Security:**  
+  Strengthened JWT authentication with proper signature verification, secure secret key generation, issuer/audience claims, and protection against token spoofing.
+- **🖼️ Smart Actor Images:**  
+  Actor photos now lazy-load from Wikipedia with multiple fallbacks. Page loads fast, images appear progressively.
+- **🎥 Async Trailer Loading:**  
+  Trailer URLs load in the background - no more waiting for YouTube searches to complete before seeing your movie.
 
 ---
 
-## 🚀 What's New in v1.7.1
+## 🚀 What's New in v1.7.2
 
 - **Donation Support:**  
   Added donation buttons (Buy Me a Coffee, Ko-fi) integrated seamlessly into the interface with matching project theme and smooth animations.

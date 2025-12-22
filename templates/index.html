@@ -930,6 +930,265 @@
       align-items: center;
     }
 
+    /* ==================== COMPARISON MODE STYLES ==================== */
+    .comparison-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1em;
+    }
+
+    .comparison-container.active {
+      display: flex;
+    }
+
+    .comparison-header {
+      text-align: center;
+      margin-bottom: 1.5em;
+    }
+
+    .comparison-header h2 {
+      color: #e5a00d;
+      font-size: 1.8em;
+      margin-bottom: 0.3em;
+      background: linear-gradient(135deg, #e5a00d 0%, #ffb347 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .comparison-header p {
+      color: #aaa;
+      font-size: 1em;
+    }
+
+    .comparison-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5em;
+      width: 100%;
+      justify-items: center;
+    }
+
+    .comparison-card {
+      background: linear-gradient(135deg, rgba(26, 26, 26, 0.95) 0%, rgba(40, 40, 40, 0.9) 100%);
+      border: 2px solid rgba(229, 160, 13, 0.2);
+      border-radius: 16px;
+      padding: 1.2em;
+      width: 100%;
+      max-width: 320px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+    }
+
+    .comparison-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #e5a00d, #ffb347);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .comparison-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(229, 160, 13, 0.5);
+      box-shadow: 0 15px 40px rgba(229, 160, 13, 0.2);
+    }
+
+    .comparison-card:hover::before {
+      opacity: 1;
+    }
+
+    .comparison-card.selected {
+      border-color: #e5a00d;
+      box-shadow: 0 0 30px rgba(229, 160, 13, 0.4);
+      transform: translateY(-8px) scale(1.02);
+    }
+
+    .comparison-card.selected::before {
+      opacity: 1;
+    }
+
+    .comparison-card.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: linear-gradient(135deg, #e5a00d 0%, #ffb347 100%);
+      color: #000;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2em;
+      z-index: 10;
+    }
+
+    .comparison-poster {
+      width: 100%;
+      height: 380px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 1em;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .comparison-title {
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.3em;
+      line-height: 1.2;
+    }
+
+    .comparison-year {
+      color: #e5a00d;
+      font-size: 1em;
+      font-weight: 500;
+      margin-bottom: 0.5em;
+    }
+
+    .comparison-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5em;
+      margin-bottom: 0.8em;
+    }
+
+    .comparison-meta-item {
+      background: rgba(229, 160, 13, 0.1);
+      border: 1px solid rgba(229, 160, 13, 0.2);
+      padding: 0.3em 0.6em;
+      border-radius: 6px;
+      font-size: 0.85em;
+      color: #e5a00d;
+    }
+
+    .comparison-genres {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4em;
+      margin-bottom: 0.8em;
+    }
+
+    .comparison-genre {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.2em 0.5em;
+      border-radius: 4px;
+      font-size: 0.75em;
+      color: #ccc;
+    }
+
+    .comparison-summary {
+      color: #bbb;
+      font-size: 0.9em;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .comparison-actions {
+      display: flex;
+      gap: 1em;
+      justify-content: center;
+      margin-top: 2em;
+      flex-wrap: wrap;
+    }
+
+    .compare-btn {
+      background: linear-gradient(135deg, #6a4c93 0%, #8b5cf6 100%);
+      color: white;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+    }
+
+    .compare-btn:hover {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    }
+
+    .comparison-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      color: #e5a00d;
+    }
+
+    .comparison-loading .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(229, 160, 13, 0.2);
+      border-top-color: #e5a00d;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1em;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .single-mode-content {
+      display: block;
+    }
+
+    .single-mode-content.hidden {
+      display: none;
+    }
+
+    /* Mode toggle button */
+    .mode-toggle-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    /* Responsive adjustments for comparison mode */
+    @media (max-width: 768px) {
+      .comparison-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison-card {
+        max-width: 100%;
+      }
+
+      .comparison-poster {
+        height: 300px;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+      .comparison-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 1025px) {
+      .comparison-cards {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    /* ==================== END COMPARISON MODE STYLES ==================== */
+
     .modal-content {
       background-color: #1e1e1e;
       margin: 15% auto;
@@ -1101,13 +1360,13 @@
       </div>
       {% endif %}
 
-      {% if movie and movie.external_trailer_url %}
-      <div class="trailer-container">
-        <a href="{{ movie.external_trailer_url }}" target="_blank" class="btn trailer-btn">
+      {% if movie %}
+      <div class="trailer-container" id="trailerContainer">
+        <a href="#" target="_blank" class="btn trailer-btn" id="trailerBtn" style="opacity: 0.6; pointer-events: none;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M10 8v8l6-4-6-4zm2-6C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
           </svg>
-          Watch Trailer
+          <span id="trailerBtnText">Loading...</span>
         </a>
       </div>
       {% endif %}
@@ -1134,9 +1393,55 @@
             Plex Match
           </a>
         </div>
+
+        <div class="mode-toggle-container">
+          <button class="btn compare-btn" onclick="toggleComparisonMode()" id="compareToggleBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M10 3H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM9 9H5V5h4v4zm11-6h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm-1 6h-4V5h4v4zm-9 4H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1zm-1 6H5v-4h4v4zm11-6h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1zm-1 6h-4v-4h4v4z"/>
+            </svg>
+            Compare Movies
+          </button>
+        </div>
       </div>
     </div>
 
+    <!-- Comparison Mode Section -->
+    <div class="comparison-container" id="comparisonContainer">
+      <div class="comparison-header">
+        <h2>🎬 Choose Your Movie</h2>
+        <p>Click on a movie to select it, then watch or get new options</p>
+      </div>
+      <div class="comparison-loading" id="comparisonLoading" style="display: none;">
+        <div class="spinner"></div>
+        <span>Loading movies...</span>
+      </div>
+      <div class="comparison-cards" id="comparisonCards">
+        <!-- Movie cards will be inserted here dynamically -->
+      </div>
+      <div class="comparison-actions">
+        <button class="btn suggest-btn" onclick="loadComparisonMovies()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+          </svg>
+          New Options
+        </button>
+        <button class="btn watch-btn" onclick="watchSelectedMovie()" id="watchSelectedBtn" disabled>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          Watch Selected
+        </button>
+        <button class="btn" onclick="toggleComparisonMode()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+          </svg>
+          Back to Single Mode
+        </button>
+      </div>
+    </div>
+
+    <!-- Single Mode Content -->
+    <div class="single-mode-content" id="singleModeContent">
     {% if error %}
       <p style="color: red;">{{ error }}</p>
     {% elif movie %}
@@ -1169,6 +1474,34 @@
           return match ? match[1] : key;
         }
         const movieId = getMovieId(movieKey);
+
+        // Lazy-load trailer URL
+        async function loadTrailerUrl() {
+          const trailerBtn = document.getElementById('trailerBtn');
+          const trailerBtnText = document.getElementById('trailerBtnText');
+          
+          if (!trailerBtn || !movieId) return;
+          
+          try {
+            const response = await fetch(`/api/trailer/${movieId}`);
+            const data = await response.json();
+            
+            if (data.trailer_url) {
+              trailerBtn.href = data.trailer_url;
+              trailerBtn.style.opacity = '1';
+              trailerBtn.style.pointerEvents = 'auto';
+              trailerBtnText.textContent = 'Watch Trailer';
+            } else {
+              trailerBtn.style.display = 'none';
+            }
+          } catch (error) {
+            console.error('Failed to load trailer:', error);
+            trailerBtn.style.display = 'none';
+          }
+        }
+        
+        // Load trailer in background
+        loadTrailerUrl();
 
         function updateLikeCount() {
           // Add loading class
@@ -1229,23 +1562,48 @@
 
       {% if movie.cast %}
       <h3 class="cast-header">Top Cast</h3>
-      <div class="cast">
+      <div class="cast" id="castContainer">
         {% for actor in movie.cast %}
-          <div class="actor">
+          <div class="actor" data-actor-name="{{ actor.name }}">
             {% if actor.thumb %}
-              <img src="{{ actor.thumb }}" alt="{{ actor.name }}">
+              <img src="{{ actor.thumb }}" alt="{{ actor.name }}" class="actor-img">
             {% else %}
-              <img src="https://via.placeholder.com/120x120/222222/e5a00d?text=?" alt="No Image">
+              <img src="https://via.placeholder.com/120x120/222222/e5a00d?text=..." alt="Loading..." class="actor-img" data-needs-load="true">
             {% endif %}
             <div class="actor-name">{{ actor.name }}</div>
           </div>
         {% endfor %}
       </div>
+      <script>
+        // Lazy-load actor images
+        async function loadActorImages() {
+          const actors = document.querySelectorAll('.actor[data-actor-name]');
+          for (const actor of actors) {
+            const img = actor.querySelector('img[data-needs-load="true"]');
+            if (img) {
+              const actorName = actor.dataset.actorName;
+              try {
+                const response = await fetch(`/api/actor-image/${encodeURIComponent(actorName)}`);
+                const data = await response.json();
+                if (data.image_url) {
+                  img.src = data.image_url;
+                  img.removeAttribute('data-needs-load');
+                }
+              } catch (error) {
+                console.error(`Failed to load image for ${actorName}:`, error);
+              }
+            }
+          }
+        }
+        // Load actor images after page load
+        loadActorImages();
+      </script>
       {% endif %}
 
     {% else %}
       <p>No movie found.</p>
     {% endif %}
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/jsrsasign@10.8.7/lib/jsrsasign-all-min.js"></script>
@@ -1615,6 +1973,168 @@
     // No additional JavaScript needed for basic functionality
     console.log('Traditional navigation mode active');
   }
+
+  // ==================== COMPARISON MODE FUNCTIONS ====================
+  
+  let comparisonMode = false;
+  let selectedMovie = null;
+  let comparisonMovies = [];
+
+  function toggleComparisonMode() {
+    comparisonMode = !comparisonMode;
+    const comparisonContainer = document.getElementById('comparisonContainer');
+    const singleModeContent = document.getElementById('singleModeContent');
+    const compareToggleBtn = document.getElementById('compareToggleBtn');
+    
+    if (comparisonMode) {
+      // Switch to comparison mode
+      comparisonContainer.classList.add('active');
+      singleModeContent.classList.add('hidden');
+      compareToggleBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm7 14l7-7h-4V6h-6v4H5l7 7z"/>
+        </svg>
+        Single Mode
+      `;
+      loadComparisonMovies();
+    } else {
+      // Switch back to single mode
+      comparisonContainer.classList.remove('active');
+      singleModeContent.classList.remove('hidden');
+      compareToggleBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 3H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM9 9H5V5h4v4zm11-6h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm-1 6h-4V5h4v4zm-9 4H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1zm-1 6H5v-4h4v4zm11-6h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1zm-1 6h-4v-4h4v4z"/>
+        </svg>
+        Compare Movies
+      `;
+      selectedMovie = null;
+    }
+  }
+
+  async function loadComparisonMovies() {
+    const cardsContainer = document.getElementById('comparisonCards');
+    const loadingEl = document.getElementById('comparisonLoading');
+    const watchBtn = document.getElementById('watchSelectedBtn');
+    
+    // Reset selection
+    selectedMovie = null;
+    watchBtn.disabled = true;
+    
+    // Show loading
+    cardsContainer.innerHTML = '';
+    loadingEl.style.display = 'flex';
+    
+    try {
+      // Get the selected library
+      const librarySelect = document.querySelector('select[name="library"]');
+      const selectedLibrary = librarySelect ? librarySelect.value : '';
+      
+      const url = `/api/compare?count=3${selectedLibrary ? `&library=${encodeURIComponent(selectedLibrary)}` : ''}`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to load movies');
+      }
+      
+      comparisonMovies = data.movies;
+      renderComparisonCards(comparisonMovies);
+      
+    } catch (error) {
+      console.error('Error loading comparison movies:', error);
+      cardsContainer.innerHTML = `
+        <div style="text-align: center; color: #dc3545; padding: 2em;">
+          <p>Failed to load movies: ${error.message}</p>
+          <button class="btn" onclick="loadComparisonMovies()">Try Again</button>
+        </div>
+      `;
+    } finally {
+      loadingEl.style.display = 'none';
+    }
+  }
+
+  function renderComparisonCards(movies) {
+    const cardsContainer = document.getElementById('comparisonCards');
+    cardsContainer.innerHTML = '';
+    
+    movies.forEach((movie, index) => {
+      const card = document.createElement('div');
+      card.className = 'comparison-card';
+      card.dataset.movieIndex = index;
+      card.onclick = () => selectComparisonMovie(index);
+      
+      // Build genres HTML
+      const genresHtml = movie.genres && movie.genres.length > 0 
+        ? `<div class="comparison-genres">${movie.genres.map(g => `<span class="comparison-genre">${g}</span>`).join('')}</div>`
+        : '';
+      
+      // Build meta HTML
+      let metaItems = [];
+      if (movie.duration_formatted) {
+        metaItems.push(`<span class="comparison-meta-item">⏱️ ${movie.duration_formatted}</span>`);
+      }
+      if (movie.rating) {
+        metaItems.push(`<span class="comparison-meta-item">⭐ ${movie.rating.toFixed(1)}</span>`);
+      }
+      const metaHtml = metaItems.length > 0 
+        ? `<div class="comparison-meta">${metaItems.join('')}</div>` 
+        : '';
+      
+      card.innerHTML = `
+        <img class="comparison-poster" src="${movie.poster_url || 'https://via.placeholder.com/300x450/333/e5a00d?text=No+Poster'}" alt="${movie.title}" loading="lazy">
+        <div class="comparison-title">${movie.title}</div>
+        <div class="comparison-year">${movie.year || 'Unknown Year'}</div>
+        ${metaHtml}
+        ${genresHtml}
+        <div class="comparison-summary">${movie.summary || 'No summary available.'}</div>
+      `;
+      
+      cardsContainer.appendChild(card);
+    });
+  }
+
+  function selectComparisonMovie(index) {
+    const cards = document.querySelectorAll('.comparison-card');
+    const watchBtn = document.getElementById('watchSelectedBtn');
+    
+    // Remove selection from all cards
+    cards.forEach(card => card.classList.remove('selected'));
+    
+    // Select the clicked card
+    cards[index].classList.add('selected');
+    selectedMovie = comparisonMovies[index];
+    
+    // Enable watch button
+    watchBtn.disabled = false;
+    
+    // Add a little animation feedback
+    cards[index].style.animation = 'none';
+    cards[index].offsetHeight; // Trigger reflow
+    cards[index].style.animation = null;
+  }
+
+  function watchSelectedMovie() {
+    if (!selectedMovie || !selectedMovie.watch_url) {
+      alert('Please select a movie first');
+      return;
+    }
+    
+    // Track the watch click if JWT token is available
+    if (JWT_TOKEN && selectedMovie.id) {
+      fetch(`${API_BASE}/watch/${encodeURIComponent(selectedMovie.id)}`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${JWT_TOKEN}`
+        }
+      }).catch(err => console.log('Watch tracking failed:', err));
+    }
+    
+    // Open the movie in Plex
+    window.open(selectedMovie.watch_url, '_blank');
+  }
+
+  // ==================== END COMPARISON MODE FUNCTIONS ====================
   </script>
 </body>
 </html>

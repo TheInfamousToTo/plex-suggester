@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .env
+docker-compose.dev.yml
 *.db
 *.sqlite3
 *.log
