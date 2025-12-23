@@ -4,6 +4,49 @@ All notable changes to the Plex Suggester project will be documented in this fil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2025-12-23
+
+### Added
+- **🔥 Tinder-Style Swipe UI** - Complete redesign of the Match page
+  - Swipeable card stack with smooth drag gestures (touch & mouse)
+  - Visual feedback indicators (LIKE/NOPE) that appear while dragging
+  - Fly-off animations when cards are swiped
+  - Card tilt effect based on drag direction
+  - Keyboard shortcuts: ← or A (pass), → or D (like), ↑ or W (super like)
+  - Action buttons for Pass/Super/Like with matching animations
+
+- **🌐 Global Room Sharing** - Rooms now sync across all deployments
+  - All match rooms stored on central backend (`plex-like.satrawi.cc`)
+  - 6-character room codes for easy sharing (e.g., `CFU43W`)
+  - Users can join rooms created on any deployment
+  - Real-time participant sync across instances
+
+- **🎉 Match Celebration** - Beautiful match detection UI
+  - Full-screen celebration overlay when matches are found
+  - Animated movie poster with pulsing glow effect
+  - Confetti-style particle animations
+  - Match counter badge
+
+### Changed
+- **Backend API Integration** - All match endpoints now proxy to global backend
+  - `POST /api/match/create` → Creates room on backend with room code
+  - `GET /api/match/rooms` → Lists all active rooms from backend
+  - `POST /api/match/join` → Joins room by 6-character code
+  - `POST /api/match/join-by-id` → Joins room by room ID
+  - `GET /api/match/state/<room_id>` → Gets room state from backend
+  - `POST /api/match/swipe` → Records swipes with movie metadata
+
+- **Environment Configuration**
+  - Added `BACKEND_API_URL` environment variable (default: `https://plex-like.satrawi.cc`)
+
+### Technical
+- Swipe gestures use CSS transforms for smooth 60fps animations
+- Card stack renders top 3 cards with scaling/offset effects
+- Touch events handled with passive listeners for better mobile performance
+- Movie metadata (title, year) now included with swipe requests
+
+---
+
 ## [1.9.0] - 2025-12-22
 
 ### Added

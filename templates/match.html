@@ -125,6 +125,13 @@
       font-weight: 600;
     }
 
+    .page-subtitle {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.8;
+    }
+
     /* ==================== NAV BUTTONS ==================== */
     .nav-buttons {
       position: absolute;
@@ -356,28 +363,140 @@
       color: var(--text-primary);
     }
 
-    /* ==================== MOVIE CARD ==================== */
+    /* ==================== TINDER-STYLE CARD STACK ==================== */
+    .card-stack {
+      position: relative;
+      width: min(380px, 90vw);
+      height: min(580px, 75vh);
+      margin: 1rem auto 1.5rem;
+      perspective: 1000px;
+    }
+
     .movie-card {
-      max-width: min(500px, 90vw);
-      margin: 1.5rem auto;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: var(--bg-glass);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-xl);
       overflow: hidden;
       backdrop-filter: blur(20px);
-      transition: var(--transition-normal);
       box-shadow: var(--shadow-card);
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      transform-origin: center bottom;
+      will-change: transform;
     }
 
-    .movie-card:hover {
-      border-color: var(--border-accent);
-      box-shadow: var(--shadow-card), 0 0 40px rgba(229, 160, 13, 0.1);
+    .movie-card:active {
+      cursor: grabbing;
+    }
+
+    .movie-card.swiping {
+      transition: none !important;
+    }
+
+    .movie-card.fly-left {
+      animation: flyLeft 0.4s ease-out forwards;
+    }
+
+    .movie-card.fly-right {
+      animation: flyRight 0.4s ease-out forwards;
+    }
+
+    @keyframes flyLeft {
+      to {
+        transform: translateX(-150%) rotate(-30deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes flyRight {
+      to {
+        transform: translateX(150%) rotate(30deg);
+        opacity: 0;
+      }
+    }
+
+    /* Stacked cards behind */
+    .movie-card.card-behind-1 {
+      transform: scale(0.95) translateY(15px);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .movie-card.card-behind-2 {
+      transform: scale(0.9) translateY(30px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .movie-card.card-front {
+      z-index: 10;
+      transition: box-shadow 0.2s ease;
+    }
+
+    .movie-card.card-front:hover {
+      box-shadow: var(--shadow-card), 0 0 50px rgba(229, 160, 13, 0.15);
+    }
+
+    /* Swipe indicator overlays */
+    .swipe-indicator {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 4rem;
+      font-weight: 800;
+      padding: 1rem 2rem;
+      border-radius: var(--radius-lg);
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .swipe-indicator.like {
+      right: 20px;
+      color: var(--match-green);
+      border: 4px solid var(--match-green);
+      background: rgba(66, 230, 149, 0.15);
+      transform: translateY(-50%) rotate(15deg);
+    }
+
+    .swipe-indicator.nope {
+      left: 20px;
+      color: var(--pass-red);
+      border: 4px solid var(--pass-red);
+      background: rgba(255, 68, 88, 0.15);
+      transform: translateY(-50%) rotate(-15deg);
+    }
+
+    .movie-card.swipe-right .swipe-indicator.like {
+      opacity: 1;
+    }
+
+    .movie-card.swipe-left .swipe-indicator.nope {
+      opacity: 1;
+    }
+
+    /* Card glow effects during swipe */
+    .movie-card.swipe-right {
+      box-shadow: var(--shadow-card), 0 0 60px rgba(66, 230, 149, 0.4);
+      border-color: var(--match-green);
+    }
+
+    .movie-card.swipe-left {
+      box-shadow: var(--shadow-card), 0 0 60px rgba(255, 68, 88, 0.4);
+      border-color: var(--pass-red);
     }
 
     .poster-container {
       position: relative;
       background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
-      min-height: 200px;
+      height: 55%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -386,13 +505,8 @@
 
     .movie-poster {
       width: 100%;
-      max-height: min(450px, 55vh);
+      height: 100%;
       object-fit: cover;
-      transition: var(--transition-slow);
-    }
-
-    .movie-card:hover .movie-poster {
-      transform: scale(1.02);
     }
 
     .poster-loading {
@@ -405,14 +519,30 @@
       z-index: 1;
     }
 
+    /* Poster gradient overlay */
+    .poster-container::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: linear-gradient(to top, var(--bg-secondary) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
     .movie-info {
-      padding: 1.5rem;
+      padding: 1.25rem 1.5rem;
       text-align: left;
+      height: 45%;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
     }
 
     .movie-title {
       font-family: var(--font-display);
-      font-size: clamp(1.25rem, 4vw, 1.75rem);
+      font-size: clamp(1.25rem, 4vw, 1.5rem);
       font-weight: 700;
       margin-bottom: 0.25rem;
       background: linear-gradient(135deg, var(--text-primary) 30%, var(--plex-orange) 100%);
@@ -422,20 +552,42 @@
       line-height: 1.2;
     }
 
+    .movie-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
     .movie-year {
-      color: var(--text-secondary);
-      font-size: 1rem;
-      margin-bottom: 1rem;
+      color: var(--plex-orange);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .movie-genres {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .genre-tag {
+      background: rgba(229, 160, 13, 0.15);
+      color: var(--plex-orange);
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--radius-full);
+      font-size: 0.7rem;
       font-weight: 500;
+      border: 1px solid var(--border-accent);
     }
 
     .movie-summary {
       color: var(--text-secondary);
-      line-height: 1.7;
-      margin-bottom: 1rem;
-      max-height: min(120px, 18vh);
+      line-height: 1.6;
+      flex: 1;
       overflow-y: auto;
-      font-size: 0.9375rem;
+      font-size: 0.875rem;
       padding-right: 0.5rem;
     }
 
@@ -448,17 +600,45 @@
       border-radius: var(--radius-full);
     }
 
+    /* Swipe hint animation */
+    .swipe-hint {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .swipe-hint-arrows {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 0.25rem;
+    }
+
+    .swipe-hint-arrows span {
+      font-size: 1.25rem;
+    }
+
+    .swipe-hint-arrows .left { color: var(--pass-red); }
+    .swipe-hint-arrows .right { color: var(--match-green); }
+
     /* ==================== SWIPE BUTTONS ==================== */
     .swipe-buttons {
       display: flex;
       justify-content: center;
-      gap: clamp(1.5rem, 6vw, 3rem);
-      margin: 2rem 0;
+      gap: clamp(2rem, 8vw, 4rem);
+      margin: 0.5rem 0 1rem;
     }
 
     .swipe-btn {
-      width: clamp(64px, 18vw, 80px);
-      height: clamp(64px, 18vw, 80px);
+      width: clamp(60px, 16vw, 72px);
+      height: clamp(60px, 16vw, 72px);
       border-radius: var(--radius-full);
       border: none;
       font-size: clamp(1.5rem, 4vw, 2rem);
@@ -491,7 +671,7 @@
     }
 
     .swipe-btn.pass:hover {
-      transform: scale(1.1) rotate(-5deg);
+      transform: scale(1.15) rotate(-10deg);
       box-shadow: 0 12px 35px rgba(255, 68, 88, 0.5);
     }
 
@@ -502,7 +682,7 @@
     }
 
     .swipe-btn.like:hover {
-      transform: scale(1.1) rotate(5deg);
+      transform: scale(1.15) rotate(10deg);
       box-shadow: 0 12px 35px rgba(66, 230, 149, 0.5);
     }
 
@@ -510,15 +690,18 @@
       background: linear-gradient(135deg, var(--plex-orange) 0%, var(--plex-orange-light) 100%);
       box-shadow: 0 8px 25px rgba(229, 160, 13, 0.4);
       color: var(--bg-primary);
+      width: clamp(50px, 14vw, 60px);
+      height: clamp(50px, 14vw, 60px);
+      font-size: clamp(1.25rem, 3.5vw, 1.5rem);
     }
 
     .swipe-btn.super:hover {
-      transform: scale(1.15);
-      box-shadow: 0 12px 35px rgba(229, 160, 13, 0.6);
+      transform: scale(1.2) translateY(-5px);
+      box-shadow: 0 15px 40px rgba(229, 160, 13, 0.6);
     }
 
     .swipe-btn:active {
-      transform: scale(0.95);
+      transform: scale(0.95) !important;
     }
 
     .swipe-btn svg {
@@ -527,6 +710,17 @@
 
     .swipe-btn:hover svg {
       transform: scale(1.1);
+    }
+
+    /* Button press animation */
+    @keyframes buttonPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+
+    .swipe-btn.pressed {
+      animation: buttonPop 0.2s ease;
     }
 
     /* ==================== ROOM INFO ==================== */
@@ -1019,23 +1213,35 @@
         font-size: 2rem;
       }
 
-      .movie-card {
-        margin: 1rem 0;
+      .card-stack {
+        width: 95vw;
+        height: min(520px, 68vh);
+        margin: 0.75rem auto 1rem;
+      }
+
+      .poster-container {
+        height: 50%;
       }
 
       .movie-info {
-        padding: 1.25rem;
+        height: 50%;
+        padding: 1rem;
       }
 
       .swipe-buttons {
-        gap: 1.25rem;
-        margin: 1.5rem 0;
+        gap: 1.5rem;
+        margin: 0.5rem 0;
       }
 
       .swipe-btn {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5rem;
+        width: 56px;
+        height: 56px;
+        font-size: 1.25rem;
+      }
+
+      .swipe-btn.super {
+        width: 48px;
+        height: 48px;
       }
 
       .modal-content {
@@ -1076,6 +1282,15 @@
         height: 150px;
         order: -1;
       }
+
+      .swipe-indicator {
+        font-size: 2.5rem;
+        padding: 0.5rem 1rem;
+      }
+
+      .swipe-hint {
+        font-size: 0.7rem;
+      }
     }
 
     @media (max-width: 480px) {
@@ -1087,14 +1302,19 @@
         font-size: 1.75rem;
       }
 
-      .movie-poster {
-        max-height: 300px;
+      .card-stack {
+        height: min(480px, 65vh);
       }
 
       .swipe-btn {
-        width: 54px;
-        height: 54px;
-        font-size: 1.25rem;
+        width: 52px;
+        height: 52px;
+        font-size: 1.125rem;
+      }
+
+      .swipe-btn.super {
+        width: 44px;
+        height: 44px;
       }
 
       .btn {
@@ -1111,38 +1331,84 @@
         right: 1rem;
         max-width: none;
       }
+
+      .movie-title {
+        font-size: 1.125rem;
+      }
+
+      .movie-summary {
+        font-size: 0.8rem;
+        line-height: 1.5;
+      }
+
+      .swipe-indicator {
+        font-size: 2rem;
+        padding: 0.4rem 0.8rem;
+      }
     }
 
     /* Landscape phone */
     @media (max-height: 500px) and (orientation: landscape) {
       .overlay {
-        padding: 0.75rem;
+        padding: 0.5rem;
       }
 
       h1 {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         margin-bottom: 0.25rem;
       }
 
-      .movie-poster {
-        max-height: 200px;
+      .page-subtitle {
+        display: none;
+      }
+
+      .card-stack {
+        width: min(280px, 45vw);
+        height: min(320px, 85vh);
+        margin: 0.5rem auto;
+      }
+
+      .poster-container {
+        height: 45%;
       }
 
       .movie-info {
+        height: 55%;
         padding: 0.75rem;
+      }
+
+      .movie-title {
+        font-size: 1rem;
       }
 
       .movie-summary {
         max-height: 60px;
+        font-size: 0.75rem;
       }
 
       .swipe-buttons {
-        margin: 0.75rem 0;
+        margin: 0.25rem 0;
+        gap: 1rem;
+      }
+
+      .swipe-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 1rem;
+      }
+
+      .swipe-btn.super {
+        width: 38px;
+        height: 38px;
       }
 
       .room-info {
-        padding: 1rem;
-        margin-bottom: 1rem;
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .swipe-hint {
+        display: none;
       }
     }
 
@@ -1153,8 +1419,9 @@
         gap: 1.5rem;
       }
 
-      .movie-card {
-        max-width: 550px;
+      .card-stack {
+        width: 420px;
+        height: 620px;
       }
     }
 
@@ -1176,6 +1443,113 @@
     ::-webkit-scrollbar-thumb:hover {
       background: var(--plex-orange);
     }
+
+    /* ==================== MATCH CELEBRATION ==================== */
+    .match-celebration {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .match-celebration.show {
+      opacity: 1;
+    }
+
+    .match-celebration.hide {
+      opacity: 0;
+    }
+
+    .match-celebration-content {
+      text-align: center;
+      animation: celebrationPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    @keyframes celebrationPop {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .match-celebration-icon {
+      font-size: 5rem;
+      animation: bounce 0.6s ease infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .match-celebration h2 {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      background: linear-gradient(135deg, var(--match-green) 0%, var(--plex-orange) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 1rem 0;
+      letter-spacing: 0.1em;
+    }
+
+    .match-celebration p {
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      margin: 0.5rem 0;
+    }
+
+    .match-movie-name {
+      color: var(--plex-orange) !important;
+      font-size: 1.75rem !important;
+      font-weight: 700;
+      margin-top: 1rem !important;
+    }
+
+    /* Keyboard shortcuts hint */
+    .keyboard-hint {
+      position: fixed;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 1.5rem;
+      background: var(--bg-glass);
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      backdrop-filter: blur(20px);
+      z-index: 50;
+    }
+
+    .keyboard-hint span {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .key {
+      background: var(--bg-secondary);
+      padding: 0.25rem 0.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      font-family: monospace;
+      font-size: 0.7rem;
+      color: var(--plex-orange);
+    }
+
+    @media (max-width: 768px) {
+      .keyboard-hint {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1186,6 +1560,13 @@
 
     <h1>🎬 Plex Match</h1>
     <p class="page-subtitle">Swipe together, watch together!</p>
+
+    <!-- Keyboard shortcuts hint (desktop only) -->
+    <div class="keyboard-hint" id="keyboard-hint" style="display: none;">
+      <span><span class="key">←</span> or <span class="key">A</span> Pass</span>
+      <span><span class="key">↑</span> or <span class="key">W</span> Super Like</span>
+      <span><span class="key">→</span> or <span class="key">D</span> Like</span>
+    </div>
 
     <!-- Main content area -->
     <div id="app">
@@ -1225,23 +1606,37 @@
           </div>
         </div>
 
-        <!-- Movie card -->
+        <!-- Movie card stack -->
         <div id="movie-container" style="display: none;">
-          <div class="movie-card" id="movie-card">
-            <div class="poster-container">
-              <div class="poster-loading">Loading...</div>
-              <img class="movie-poster" id="movie-poster" alt="Movie Poster" style="display: none;">
-            </div>
-            <div class="movie-info">
-              <h3 class="movie-title" id="movie-title"></h3>
-              <p class="movie-year" id="movie-year"></p>
-              <p class="movie-summary" id="movie-summary"></p>
+          <div class="card-stack" id="card-stack">
+            <!-- Cards will be dynamically inserted here -->
+          </div>
+
+          <div class="swipe-hint" id="swipe-hint">
+            <span>Swipe or use buttons below</span>
+            <div class="swipe-hint-arrows">
+              <span class="left">← NOPE</span>
+              <span class="right">LIKE →</span>
             </div>
           </div>
 
           <div class="swipe-buttons">
-            <button class="swipe-btn pass" onclick="swipe('pass')" title="Pass">👎</button>
-            <button class="swipe-btn like" onclick="swipe('like')" title="Like">❤️</button>
+            <button class="swipe-btn pass" onclick="triggerSwipe('pass')" title="Pass">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <button class="swipe-btn super" onclick="triggerSwipe('super')" title="Super Like">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+            </button>
+            <button class="swipe-btn like" onclick="triggerSwipe('like')" title="Like">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -1306,12 +1701,23 @@
 
   <script>
     const POLL_INTERVAL = 3000;
+    const SWIPE_THRESHOLD = 100; // px to trigger swipe
+    const ROTATION_MULTIPLIER = 0.15; // rotation angle per pixel
+    
     let currentRoom = null;
     let currentUser = null;
     let currentMovieIndex = 0;
     let movies = [];
     let pollTimer = null;
     let seenMovies = new Set();
+    let isAnimating = false;
+    
+    // Touch/Mouse tracking
+    let startX = 0;
+    let startY = 0;
+    let currentX = 0;
+    let isDragging = false;
+    let activeCard = null;
 
     // Check for stored session on load
     window.onload = function() {
@@ -1326,6 +1732,335 @@
       }
       loadActiveRooms();
     };
+
+    function createMovieCard(movie, index, isTop = false) {
+      const card = document.createElement('div');
+      card.className = `movie-card ${isTop ? 'card-front' : index === 1 ? 'card-behind-1' : 'card-behind-2'}`;
+      card.dataset.movieId = movie.id;
+      card.dataset.index = currentMovieIndex + index;
+      
+      card.innerHTML = `
+        <div class="swipe-indicator like">LIKE</div>
+        <div class="swipe-indicator nope">NOPE</div>
+        <div class="poster-container">
+          <div class="poster-loading">Loading...</div>
+          <img class="movie-poster" 
+               src="${movie.poster || ''}" 
+               alt="${movie.title}"
+               onload="this.previousElementSibling.style.display='none'; this.style.display='block';"
+               onerror="this.previousElementSibling.textContent='🎬';"
+               style="display: none;">
+        </div>
+        <div class="movie-info">
+          <h3 class="movie-title">${movie.title}</h3>
+          <div class="movie-meta">
+            <span class="movie-year">${movie.year || ''}</span>
+            <div class="movie-genres">
+              ${(movie.genres || []).slice(0, 3).map(g => `<span class="genre-tag">${g}</span>`).join('')}
+            </div>
+          </div>
+          <p class="movie-summary">${movie.summary || 'No summary available'}</p>
+        </div>
+      `;
+      
+      if (isTop) {
+        setupCardGestures(card);
+      }
+      
+      return card;
+    }
+
+    function setupCardGestures(card) {
+      // Touch events
+      card.addEventListener('touchstart', handleTouchStart, { passive: true });
+      card.addEventListener('touchmove', handleTouchMove, { passive: false });
+      card.addEventListener('touchend', handleTouchEnd);
+      
+      // Mouse events
+      card.addEventListener('mousedown', handleMouseDown);
+    }
+
+    function handleTouchStart(e) {
+      if (isAnimating) return;
+      const touch = e.touches[0];
+      startDrag(touch.clientX, touch.clientY, e.currentTarget);
+    }
+
+    function handleTouchMove(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+      const touch = e.touches[0];
+      moveDrag(touch.clientX, touch.clientY);
+    }
+
+    function handleTouchEnd(e) {
+      if (!isDragging) return;
+      endDrag();
+    }
+
+    function handleMouseDown(e) {
+      if (isAnimating) return;
+      e.preventDefault();
+      startDrag(e.clientX, e.clientY, e.currentTarget);
+      
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    function handleMouseMove(e) {
+      if (!isDragging) return;
+      moveDrag(e.clientX, e.clientY);
+    }
+
+    function handleMouseUp(e) {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      if (!isDragging) return;
+      endDrag();
+    }
+
+    function startDrag(x, y, card) {
+      isDragging = true;
+      startX = x;
+      startY = y;
+      currentX = 0;
+      activeCard = card;
+      activeCard.classList.add('swiping');
+      
+      // Hide swipe hint after first interaction
+      const hint = document.getElementById('swipe-hint');
+      if (hint) hint.style.opacity = '0';
+    }
+
+    function moveDrag(x, y) {
+      if (!activeCard) return;
+      
+      currentX = x - startX;
+      const rotation = currentX * ROTATION_MULTIPLIER;
+      const opacity = Math.min(Math.abs(currentX) / SWIPE_THRESHOLD, 1);
+      
+      activeCard.style.transform = `translateX(${currentX}px) rotate(${rotation}deg)`;
+      
+      // Show swipe indicators
+      if (currentX > 20) {
+        activeCard.classList.add('swipe-right');
+        activeCard.classList.remove('swipe-left');
+      } else if (currentX < -20) {
+        activeCard.classList.add('swipe-left');
+        activeCard.classList.remove('swipe-right');
+      } else {
+        activeCard.classList.remove('swipe-left', 'swipe-right');
+      }
+    }
+
+    function endDrag() {
+      if (!activeCard) return;
+      
+      isDragging = false;
+      activeCard.classList.remove('swiping');
+      
+      if (Math.abs(currentX) >= SWIPE_THRESHOLD) {
+        // Swipe completed
+        const action = currentX > 0 ? 'like' : 'pass';
+        completeSwipe(action);
+      } else {
+        // Return to center
+        activeCard.style.transition = 'transform 0.3s ease';
+        activeCard.style.transform = '';
+        activeCard.classList.remove('swipe-left', 'swipe-right');
+        
+        setTimeout(() => {
+          if (activeCard) {
+            activeCard.style.transition = '';
+          }
+        }, 300);
+      }
+      
+      activeCard = null;
+    }
+
+    function triggerSwipe(action) {
+      if (isAnimating) return;
+      
+      const stack = document.getElementById('card-stack');
+      const topCard = stack.querySelector('.card-front');
+      if (!topCard) return;
+      
+      // Add button press animation
+      const btn = event.currentTarget;
+      btn.classList.add('pressed');
+      setTimeout(() => btn.classList.remove('pressed'), 200);
+      
+      activeCard = topCard;
+      completeSwipe(action);
+    }
+
+    function completeSwipe(action) {
+      if (!activeCard || isAnimating) return;
+      isAnimating = true;
+      
+      const movieId = activeCard.dataset.movieId;
+      const movieIndex = parseInt(activeCard.dataset.index);
+      const movie = movies[movieIndex] || {};
+      const flyClass = action === 'pass' ? 'fly-left' : 'fly-right';
+      
+      // Apply fly animation
+      activeCard.classList.add(flyClass);
+      
+      // Record the swipe with movie details
+      recordSwipe(movieId, action, movie.title || '', movie.year || null);
+      
+      // After animation, update the stack
+      setTimeout(() => {
+        removeTopCard();
+        isAnimating = false;
+      }, 400);
+    }
+
+    async function recordSwipe(movieId, action, movieTitle, movieYear) {
+      try {
+        const response = await fetch('/api/match/swipe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            room_id: currentRoom,
+            username: currentUser,
+            movie_id: movieId,
+            movie_title: movieTitle,
+            movie_year: movieYear,
+            action: action
+          })
+        });
+        
+        seenMovies.add(movieId);
+        
+        // Check for match notification
+        const data = await response.json();
+        if (data.is_match) {
+          showMatchCelebration(data.movie_title || movieTitle);
+        }
+      } catch (e) {
+        showNotification('Failed to record swipe', 'error');
+      }
+    }
+
+    function removeTopCard() {
+      const stack = document.getElementById('card-stack');
+      const topCard = stack.querySelector('.card-front');
+      
+      if (topCard) {
+        topCard.remove();
+      }
+      
+      currentMovieIndex++;
+      
+      // Promote cards
+      const behind1 = stack.querySelector('.card-behind-1');
+      const behind2 = stack.querySelector('.card-behind-2');
+      
+      if (behind1) {
+        behind1.classList.remove('card-behind-1');
+        behind1.classList.add('card-front');
+        behind1.style.transition = 'transform 0.3s ease';
+        setupCardGestures(behind1);
+        setTimeout(() => behind1.style.transition = '', 300);
+      }
+      
+      if (behind2) {
+        behind2.classList.remove('card-behind-2');
+        behind2.classList.add('card-behind-1');
+        behind2.style.transition = 'transform 0.3s ease';
+        setTimeout(() => behind2.style.transition = '', 300);
+      }
+      
+      // Add new card to bottom of stack
+      addNewCardToStack();
+      
+      // Check if all movies seen
+      if (!stack.querySelector('.card-front')) {
+        showAllSeenState();
+      }
+    }
+
+    function addNewCardToStack() {
+      const stack = document.getElementById('card-stack');
+      const nextIndex = currentMovieIndex + 2;
+      
+      // Find next unseen movie
+      let movieIndex = nextIndex;
+      while (movieIndex < movies.length && seenMovies.has(movies[movieIndex].id)) {
+        movieIndex++;
+      }
+      
+      if (movieIndex < movies.length) {
+        const newCard = createMovieCard(movies[movieIndex], 2, false);
+        newCard.classList.remove('card-behind-1');
+        newCard.classList.add('card-behind-2');
+        stack.appendChild(newCard);
+      }
+    }
+
+    function renderCardStack() {
+      const stack = document.getElementById('card-stack');
+      stack.innerHTML = '';
+      
+      // Skip seen movies
+      while (currentMovieIndex < movies.length && seenMovies.has(movies[currentMovieIndex].id)) {
+        currentMovieIndex++;
+      }
+      
+      if (currentMovieIndex >= movies.length) {
+        showAllSeenState();
+        return;
+      }
+      
+      // Create up to 3 cards
+      for (let i = 0; i < 3 && (currentMovieIndex + i) < movies.length; i++) {
+        let movieIdx = currentMovieIndex + i;
+        
+        // Skip seen movies
+        while (movieIdx < movies.length && seenMovies.has(movies[movieIdx].id)) {
+          movieIdx++;
+        }
+        
+        if (movieIdx < movies.length) {
+          const card = createMovieCard(movies[movieIdx], i, i === 0);
+          stack.appendChild(card);
+        }
+      }
+      
+      // Show hint on first card
+      const hint = document.getElementById('swipe-hint');
+      if (hint && !localStorage.getItem('swipeHintSeen')) {
+        hint.style.opacity = '1';
+        setTimeout(() => {
+          localStorage.setItem('swipeHintSeen', 'true');
+        }, 5000);
+      }
+    }
+
+    function showMatchCelebration(movieTitle) {
+      const notification = document.createElement('div');
+      notification.className = 'match-celebration';
+      notification.innerHTML = `
+        <div class="match-celebration-content">
+          <div class="match-celebration-icon">🎉</div>
+          <h2>IT'S A MATCH!</h2>
+          <p>Everyone wants to watch</p>
+          <p class="match-movie-name">${movieTitle}</p>
+        </div>
+      `;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.classList.add('show');
+      }, 10);
+      
+      setTimeout(() => {
+        notification.classList.add('hide');
+        setTimeout(() => notification.remove(), 500);
+      }, 3000);
+    }
 
     function showNotification(message, type = 'info') {
       const container = document.getElementById('notification-container');
@@ -1549,6 +2284,12 @@
       document.getElementById('room-name-display').textContent = roomName;
       document.getElementById('room-code-display').textContent = `Room Code: ${roomCode}`;
       
+      // Show keyboard hints on desktop
+      const keyboardHint = document.getElementById('keyboard-hint');
+      if (keyboardHint && window.matchMedia('(min-width: 769px)').matches) {
+        keyboardHint.style.display = 'flex';
+      }
+      
       startPolling();
     }
 
@@ -1560,6 +2301,11 @@
       movies = [];
       currentMovieIndex = 0;
       seenMovies.clear();
+      isAnimating = false;
+      
+      // Hide keyboard hints
+      const keyboardHint = document.getElementById('keyboard-hint');
+      if (keyboardHint) keyboardHint.style.display = 'none';
       
       document.getElementById('match-room').style.display = 'none';
       document.getElementById('welcome-screen').style.display = 'block';
@@ -1641,6 +2387,7 @@
         return;
       }
 
+      // Skip already seen movies
       while (currentMovieIndex < movies.length && seenMovies.has(movies[currentMovieIndex].id)) {
         currentMovieIndex++;
       }
@@ -1654,62 +2401,8 @@
       document.getElementById('movie-container').style.display = 'block';
       document.getElementById('all-seen-state').style.display = 'none';
 
-      const movie = movies[currentMovieIndex];
-      const posterImg = document.getElementById('movie-poster');
-      const posterLoading = document.querySelector('.poster-loading');
-      
-      posterLoading.style.display = 'block';
-      posterImg.style.display = 'none';
-      
-      if (movie.poster) {
-        posterImg.onload = () => {
-          posterLoading.style.display = 'none';
-          posterImg.style.display = 'block';
-        };
-        posterImg.onerror = () => {
-          posterLoading.textContent = '🎬';
-          posterImg.style.display = 'none';
-        };
-        posterImg.src = movie.poster;
-      } else {
-        posterLoading.textContent = '🎬';
-      }
-      
-      document.getElementById('movie-title').textContent = movie.title;
-      document.getElementById('movie-year').textContent = movie.year;
-      document.getElementById('movie-summary').textContent = movie.summary || 'No summary available';
-    }
-
-    async function swipe(action) {
-      if (currentMovieIndex >= movies.length) return;
-      
-      const movie = movies[currentMovieIndex];
-      const card = document.getElementById('movie-card');
-      
-      card.classList.add(action === 'like' ? 'swipe-right' : 'swipe-left');
-      
-      try {
-        await fetch('/api/match/swipe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            room_id: currentRoom,
-            username: currentUser,
-            movie_id: movie.id,
-            action: action
-          })
-        });
-        
-        seenMovies.add(movie.id);
-      } catch (e) {
-        showNotification('Failed to record swipe', 'error');
-      }
-
-      setTimeout(() => {
-        card.classList.remove('swipe-right', 'swipe-left');
-        currentMovieIndex++;
-        showCurrentMovie();
-      }, 300);
+      // Render the card stack
+      renderCardStack();
     }
 
     function quickJoin(roomId, roomName) {
@@ -1739,6 +2432,20 @@
         const quickJoinModal = document.getElementById('quick-join-modal');
         if (quickJoinModal && quickJoinModal.style.display === 'flex') {
           submitQuickJoin();
+        }
+      }
+      
+      // Keyboard shortcuts for swiping (when in match room)
+      if (document.getElementById('movie-container').style.display !== 'none') {
+        if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') {
+          e.preventDefault();
+          triggerSwipe('pass');
+        } else if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') {
+          e.preventDefault();
+          triggerSwipe('like');
+        } else if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w' || e.key === ' ') {
+          e.preventDefault();
+          triggerSwipe('super');
         }
       }
     });

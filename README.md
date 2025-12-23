@@ -2,10 +2,23 @@
 
 # Plex Movie Suggester
 
-**Version 1.9.0**
+**Version 2.0.0**
 
 A modern Flask app that connects to your Plex server and suggests a random unwatched movie, TV show, anime, or other video from your Plex library.  
 Features a sleek, responsive Plex-themed UI with modern glass morphism design, interactive elements, **secure JWT-based authentication**, and **Plex Match functionality** for group viewing decisions.
+
+---
+
+## 🚀 What's New in v2.0.0
+
+- **🔥 Tinder-Style Swipe UI:**  
+  Complete redesign of Plex Match with swipeable card stack, drag gestures (touch & mouse), fly-off animations, and keyboard shortcuts (←/A pass, →/D like, ↑/W super).
+- **🌐 Global Room Sharing:**  
+  Rooms now sync across all deployments via central backend. Share 6-character room codes with friends to join from anywhere.
+- **🎉 Match Celebrations:**  
+  Beautiful full-screen celebration overlay with animated posters and particle effects when matches are found.
+- **⚡ Backend Integration:**  
+  All match data stored on `plex-like.satrawi.cc` for cross-instance synchronization.
 
 ---
 
@@ -334,35 +347,52 @@ The provided [Dockerfile](Dockerfile) uses Python 3.11-slim and runs the app wit
 - **Get watch count:**  
   `GET /watch-count/<movie_id>`
 
-## 🎬 Plex Match API (v1.6+)
+## 🎬 Plex Match API (v2.0+)
 
-The Plex Match feature provides a Tinder-style interface for group movie selection. All endpoints require JWT authentication.
+The Plex Match feature provides a Tinder-style swipe interface for group movie selection. Rooms sync globally via the backend API.
 
 **Room Management:**
 
 - **Create room:**  
-  `POST /api/match/rooms` - Create a new matching room
-- **Join room:**  
-  `POST /api/match/rooms/{room_id}/join` - Join an existing room
-- **Get room info:**  
-  `GET /api/match/rooms/{room_id}` - Get room details and participants
+  `POST /api/match/create` - Create a new room with 6-character code
+  ```json
+  { "name": "Movie Night", "username": "Alice" }
+  ```
+- **List rooms:**  
+  `GET /api/match/rooms` - List all active public rooms
+- **Join by code:**  
+  `POST /api/match/join` - Join room using 6-character code
+  ```json
+  { "room_code": "CFU43W", "username": "Bob" }
+  ```
+- **Join by ID:**  
+  `POST /api/match/join-by-id` - Join room using room ID
+- **Room state:**  
+  `GET /api/match/state/{room_id}` - Get participants, swipes, matches
 
 **Movie Swiping:**
 
-- **Get next movie:**  
-  `GET /api/match/rooms/{room_id}/next-movie` - Get next movie to swipe on
 - **Record swipe:**  
-  `POST /api/match/rooms/{room_id}/swipe` - Record like/dislike/super-like
-- **Get matches:**  
-  `GET /api/match/rooms/{room_id}/matches` - Get movies liked by multiple users
+  `POST /api/match/swipe` - Record like/pass/super
+  ```json
+  { "room_id": "abc123", "username": "Alice", "movie_id": "1234", "movie_title": "Dune", "movie_year": 2024, "action": "like" }
+  ```
+- **Rejoin room:**  
+  `POST /api/match/rejoin` - Rejoin a room with existing user ID
 
 **How Plex Match Works:**
 
-1. Create or join a room with friends/family
-2. Swipe through movies from your selected Plex library
-3. Movies liked by the minimum number of participants become "matches"
-4. View matches with full details (poster, summary, cast, trailers)
-5. Rooms automatically expire after 24 hours
+1. Create a room and share the 6-character code with friends
+2. Friends join from any deployment using the room code
+3. Swipe through movies: drag right to like, left to pass
+4. Movies liked by multiple participants become "matches"
+5. Celebrate matches with full-screen animations!
+6. Rooms automatically expire after 24 hours
+
+**Keyboard Shortcuts:**
+- `→` or `D` - Like movie
+- `←` or `A` - Pass movie
+- `↑` or `W` - Super like movie
 
 ## 🔧 Plex Match Integration
 
