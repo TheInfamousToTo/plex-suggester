@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Action buttons for Pass/Super/Like with matching animations
 
 - **🌐 Global Room Sharing** - Rooms now sync across all deployments
-  - All match rooms stored on central backend (`plex-like.satrawi.cc`)
+  - All match rooms stored on central backend (configurable via `BACKEND_API_URL`)
   - 6-character room codes for easy sharing (e.g., `CFU43W`)
   - Users can join rooms created on any deployment
   - Real-time participant sync across instances
@@ -37,7 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - `POST /api/match/swipe` → Records swipes with movie metadata
 
 - **Environment Configuration**
-  - Added `BACKEND_API_URL` environment variable (default: `https://plex-like.satrawi.cc`)
+  - Added `BACKEND_API_URL` environment variable for backend configuration
 
 ### Technical
 - Swipe gestures use CSS transforms for smooth 60fps animations

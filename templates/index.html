@@ -1378,7 +1378,7 @@
         <span id="dislike-count"></span>
       </div>
       <script>
-        const API_BASE = "https://plex-like.satrawi.cc";
+        const API_BASE = "{{ backend_api_url }}";
         const movieKey = "{{ movie.key|e }}";
         function getMovieId(key) {
           const match = key.match(/(\d+)$/);

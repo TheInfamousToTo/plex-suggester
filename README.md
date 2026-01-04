@@ -18,7 +18,7 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 - **🎉 Match Celebrations:**  
   Beautiful full-screen celebration overlay with animated posters and particle effects when matches are found.
 - **⚡ Backend Integration:**  
-  All match data stored on `plex-like.satrawi.cc` for cross-instance synchronization.
+  Match data syncs via configurable backend API for cross-instance synchronization.
 
 ---
 
@@ -204,7 +204,7 @@ Features a sleek, responsive Plex-themed UI with modern glass morphism design, i
 - `PLEX_TOKEN`: Your Plex authentication token - **Optional** (can be set via web interface)
 - `PLEX_LIBRARY`: Default Plex library to suggest from (default: "Movies")
 - `JWT_SECRET_KEY`: Secret key for JWT token signing (default provided, change in production)
-- `BACKEND_API_URL`: URL for the plex-backend service for plex match functionality (default: "https://plex-like.satrawi.cc")
+- `BACKEND_API_URL`: URL for the plex-backend service for plex match functionality (optional - for self-hosted backend)
 
 **Note:** When `PLEX_TOKEN` is provided as an environment variable, the app will use it directly and skip the web-based authentication prompt. The app will still obtain JWT tokens for external API integrations (like like/dislike/watch functionality and plex matching) as needed.
 

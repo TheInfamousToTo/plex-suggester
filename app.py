@@ -1638,7 +1638,7 @@ def home():
     libraries = get_plex_libraries(token)
     # Use FAST version for initial page load
     error, movie = get_random_movie_fast(selected_library, token)
-    return render_template("index.html", error=error, movie=movie, libraries=libraries, selected_library=selected_library, has_env_token=bool(PLEX_TOKEN), plex_token=PLEX_TOKEN if PLEX_TOKEN else "")
+    return render_template("index.html", error=error, movie=movie, libraries=libraries, selected_library=selected_library, has_env_token=bool(PLEX_TOKEN), plex_token=PLEX_TOKEN if PLEX_TOKEN else "", backend_api_url=BACKEND_API_URL)
 
 @app.route("/api/trailer/<movie_id>")
 def get_trailer_url(movie_id):
