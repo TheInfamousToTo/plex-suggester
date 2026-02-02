@@ -28,7 +28,7 @@ JWT_SECRET_KEY = _default_secret
 app.secret_key = os.getenv("FLASK_SECRET_KEY", secrets.token_hex(32))
 
 # Backend API configuration
-BACKEND_API_URL = os.getenv("BACKEND_API_URL", "https://plex-like.satrawi.cc")
+BACKEND_API_URL = os.getenv("BACKEND_API_URL", "https://plex-like.satrawi.com")
 
 # Plex config from environment
 PLEX_URL = os.getenv("PLEX_URL")
